@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use crate::general::components::Crosshair;
+
 use super::components::*;
 
 pub fn spawn_player(
@@ -19,9 +21,9 @@ pub fn spawn_player(
             texture: asset_server.load("sprites/base.png"),
             ..default()
         },
-        Player {},
+        BaseBlock {},
     )).with_children(|parent| {
-        parent.spawn(
+        parent.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(
                     0.0,
@@ -30,14 +32,25 @@ pub fn spawn_player(
                 ),
                 texture: asset_server.load("sprites/grappler.png"),
                 ..default()
-            }
-        );
+            },
+            Grappler {},
+        ));
     });
+}
+
+pub fn rotate_grappler(
+    mut grappler_query: Query<(&mut Transform, &GlobalTransform), With<Grappler>>,
+    crosshair_query: Query<&Transform, (With<Crosshair>, Without<Grappler>)>
+) {
+    let (mut grappler_transform, grappler_glob_transform) = grappler_query.single_mut();
+    let crosshair_transform = crosshair_query.single();
+    let dir_to_crosshair = (crosshair_transform.translation - grappler_glob_transform.translation()).normalize();
+    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir_to_crosshair);
 }
 
 pub fn player_movement(
     keyboard_input: Res<Input<KeyCode>>,
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<&mut Transform, With<BaseBlock>>,
     time: Res<Time>,
 ) {
     if let Ok(mut player_transform) = player_query.get_single_mut() {

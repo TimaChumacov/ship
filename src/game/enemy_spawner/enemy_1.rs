@@ -1,23 +1,26 @@
+use bevy::prelude::*;
+use crate::game::components::Destructible;
+use super::components::ChaseBehavior;
+
 #[derive(Component)]
-pub struct Enemy1 {
-    hp: i8,
-}
+pub struct Enemy1 {}
 
 impl Enemy1 {
     pub fn spawn(
         mut commands: Commands,
         asset_server: Res<AssetServer>,
     ) {
-        let window = window_query.single().unwrap();
-
         commands.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                texture: asset_server.load("assets/enemy.png"),
+                transform: Transform::from_xyz(600.0, 500.0, 0.0),
+                texture: asset_server.load("sprites/enemy.png"),
                 ..default()
             },
-            Enemy1 {
+            Destructible {
                 hp: 1,
+            },
+            ChaseBehavior {
+                speed: 40.0,
             }
         ));
     }

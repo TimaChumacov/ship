@@ -33,19 +33,11 @@ pub fn spawn_player(
                 texture: asset_server.load("sprites/grappler.png"),
                 ..default()
             },
-            Grappler {},
+            Grappler {
+                target: Vec3::ZERO,
+            },
         ));
     });
-}
-
-pub fn rotate_grappler(
-    mut grappler_query: Query<(&mut Transform, &GlobalTransform), With<Grappler>>,
-    crosshair_query: Query<&Transform, (With<Crosshair>, Without<Grappler>)>
-) {
-    let (mut grappler_transform, grappler_glob_transform) = grappler_query.single_mut();
-    let crosshair_transform = crosshair_query.single();
-    let dir_to_crosshair = (crosshair_transform.translation - grappler_glob_transform.translation()).normalize();
-    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir_to_crosshair);
 }
 
 pub fn player_movement(
@@ -67,4 +59,14 @@ pub fn player_movement(
             player_transform.translation.x += PLAYER_SPEED * time.delta_seconds();
         }
     }
+}
+
+pub fn grappler_logic(
+    mut grappler_query: Query<(&mut Transform, &GlobalTransform), With<Grappler>>,
+    crosshair_query: Query<&Transform, (With<Crosshair>, Without<Grappler>)>
+) {
+    let (mut grappler_transform, grappler_glob_transform) = grappler_query.single_mut();
+    let crosshair_transform = crosshair_query.single();
+    let dir_to_crosshair = (crosshair_transform.translation - grappler_glob_transform.translation()).normalize();
+    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir_to_crosshair);
 }

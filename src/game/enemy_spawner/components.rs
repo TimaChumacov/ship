@@ -1,5 +1,10 @@
 use bevy::prelude::*;
 
+#[derive(Component)]
+pub struct ChaseBehavior {
+    pub speed: f32,
+}
+
 #[derive(Resource)]
 pub struct EnemySpawnTimer {
     pub timer: Timer,

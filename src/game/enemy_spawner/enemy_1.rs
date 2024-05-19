@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use crate::game::components::Destructible;
-use super::components::ChaseBehavior;
+use super::components::{Enemy, ChaseBehavior};
+
 
 #[derive(Component)]
 pub struct Enemy1 {}
@@ -16,6 +17,7 @@ impl Enemy1 {
                 texture: asset_server.load("sprites/enemy.png"),
                 ..default()
             },
+            Enemy {},
             Destructible {
                 hp: 1,
             },

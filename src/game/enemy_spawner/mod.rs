@@ -3,10 +3,10 @@ use bevy::prelude::*;
 mod systems;
 use systems::*;
 
-mod components;
+pub mod components;
 use components::EnemySpawnTimer;
 
-mod enemy_1;
+pub mod enemy_1;
 
 pub struct EnemySpawnerPlugin;
 

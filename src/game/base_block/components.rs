@@ -6,6 +6,4 @@ pub const PLAYER_SPEED: f32 = 100.0;
 pub struct BaseBlock {}
 
 #[derive(Component)]
-pub struct Grappler {
-    pub target: Vec3,
-}
+pub struct Grappler {}

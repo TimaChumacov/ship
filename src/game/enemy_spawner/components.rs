@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
+pub struct Enemy {}
+
+#[derive(Component)]
 pub struct ChaseBehavior {
     pub speed: f32,
 }

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::game::base_block::components::BaseBlock;
+use crate::game::player::components::Player;
 
 use super::components::{ChaseBehavior, EnemySpawnTimer};
 use super::enemy_1::*;
@@ -22,7 +22,7 @@ pub fn spawn_enemies(
 
 pub fn enemy_movement(
     mut enemy_query: Query<(&mut Transform, &ChaseBehavior)>,
-    player_query: Query<&Transform, (With<BaseBlock>, Without<ChaseBehavior>)>,
+    player_query: Query<&Transform, (With<Player>, Without<ChaseBehavior>)>,
     time: Res<Time>
 ) {
     let player_transform = player_query.single();

@@ -21,35 +21,35 @@ pub fn spawn_camera(
     });
 }
 
-pub fn spawn_crosshair(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("sprites/crosshair.png"),
-            ..default()
-        },
-        Crosshair {},
-    ));
-}
+// pub fn spawn_crosshair(
+//     mut commands: Commands,
+//     asset_server: Res<AssetServer>,
+// ) {
+//     commands.spawn((
+//         SpriteBundle {
+//             texture: asset_server.load("sprites/crosshair.png"),
+//             ..default()
+//         },
+//         Crosshair {},
+//     ));
+// }
 
-pub fn crosshair_follow_mouse(
-    mut crosshair_query: Query<&mut Transform, With<Crosshair>>,
-    mut window_query: Query<&mut Window, With<PrimaryWindow>>,
-) {
-    let mut window = window_query.get_single_mut().unwrap();
-    window.cursor.visible = false;
-    let cursor_position = window.cursor_position();
-    match cursor_position {
-        Some(cursor_position) => {
-            let mut crosshair_transform = crosshair_query.single_mut();
-            crosshair_transform.translation = Vec3::new(
-                (cursor_position.x - window.width() / 2.0) * ZOOM + window.width() / 2.0, 
-                (cursor_position.y - window.height() / 2.0) * ZOOM + window.height() / 2.0, 
-                0.0
-            );
-        },
-        None => {}
-    }
-}
+// pub fn crosshair_follow_mouse(
+//     mut crosshair_query: Query<&mut Transform, With<Crosshair>>,
+//     mut window_query: Query<&mut Window, With<PrimaryWindow>>,
+// ) {
+//     let mut window = window_query.get_single_mut().unwrap();
+//     window.cursor.visible = false;
+//     let cursor_position = window.cursor_position();
+//     match cursor_position {
+//         Some(cursor_position) => {
+//             let mut crosshair_transform = crosshair_query.single_mut();
+//             crosshair_transform.translation = Vec3::new(
+//                 (cursor_position.x - window.width() / 2.0) * ZOOM + window.width() / 2.0, 
+//                 (cursor_position.y - window.height() / 2.0) * ZOOM + window.height() / 2.0, 
+//                 0.0
+//             );
+//         },
+//         None => {}
+//     }
+// }

@@ -20,3 +20,21 @@ impl Turret {
         ));
     }
 }
+
+#[derive(Component)]
+pub struct Bullet {
+    pub speed: f32,
+    pub damage: i8,
+    pub lifetime: f32,
+}
+
+#[derive(Resource)]
+pub struct TurretTimer {
+    pub timer: Timer,
+}
+
+impl Default for TurretTimer {
+    fn default() -> Self {
+        TurretTimer { timer: Timer::from_seconds(0.3, TimerMode::Repeating) }
+    }
+}

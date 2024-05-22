@@ -16,6 +16,7 @@ impl Harvester {
                 ..default()
             },
             Block {},
+            Harvester {},
         )).with_children(|parent| {
             parent.spawn((
                 SpriteBundle {

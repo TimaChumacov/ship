@@ -4,17 +4,14 @@ use crate::game::player::components::Player;
 use super::components::{ChaseBehavior, EnemySpawnTimer};
 use super::enemy_1::*;
 
-pub fn tick_enemy_spawn_timer(
-    mut enemy_spawn_timer: ResMut<EnemySpawnTimer>, time: Res<Time>
-) {
-    enemy_spawn_timer.timer.tick(time.delta());
-}
-
 pub fn spawn_enemies(
     commands: Commands,
-    enemy_spawn_timer: ResMut<EnemySpawnTimer>,
+    mut enemy_spawn_timer: ResMut<EnemySpawnTimer>,
+    time: Res<Time>,
     asset_server: Res<AssetServer>,
 ) {
+    enemy_spawn_timer.timer.tick(time.delta());
+    
     if enemy_spawn_timer.timer.finished() {
         Enemy1::spawn(commands, asset_server);
     }

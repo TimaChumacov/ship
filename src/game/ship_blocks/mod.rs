@@ -9,9 +9,15 @@ pub mod turret;
 pub mod systems;
 use systems::*;
 
-pub struct BaseBlockPlugin;
+use self::turret::TurretTimer;
 
-impl Plugin for BaseBlockPlugin {
+pub struct ShipBlocksPlugin;
+
+impl Plugin for ShipBlocksPlugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<TurretTimer>()
+        .add_system(turret_logic)
+        .add_system(bullet_logic)
+        .add_system(harvester_logic);
     }
 }

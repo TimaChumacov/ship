@@ -4,3 +4,6 @@ use bevy::prelude::*;
 pub struct Destructible {
     pub hp: i8,
 }
+
+#[derive(Component)]
+pub struct Loot {}

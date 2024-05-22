@@ -1,11 +1,12 @@
 use bevy::prelude::*;
-use super::components::Block;
+use super::components::{Block, Spawn};
 
 #[derive(Component)]
 pub struct Core {}
 
-impl Core {
-    pub fn spawn(
+impl Spawn for Core {
+    fn spawn(
+        spawn_pos: Vec3,
         parent: &mut ChildBuilder,
         asset_server: &Res<AssetServer>,
     ) {

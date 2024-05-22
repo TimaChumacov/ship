@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use super::components::*;
-use crate::game::ship_blocks::{core::Core, harvester::Harvester, turret::Turret};
+use crate::game::ship_blocks::{components::Blocks, core::Core, harvester::Harvester, turret::Turret};
 
 pub fn spawn_player(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
+    ship_layout: Res<ShipLayout>
 ) {
     let window = window_query.get_single().unwrap();
 
@@ -22,9 +23,16 @@ pub fn spawn_player(
         }, 
         Player {},
     )).with_children(|parent|{
-        Core::spawn(parent, &asset_server);
-        Harvester::spawn(parent, &asset_server);
-        Turret::spawn(parent, &asset_server);
+        for x in ship_layout.blocks.iter() {
+            for y in x.iter() {
+                if let Some(y) = y {
+                    y.spawn(Vec3::ZERO, parent, &asset_server);
+                }
+            }
+        }
+        // Core::spawn(parent, &asset_server);
+        // Harvester::spawn(parent, &asset_server);
+        // Turret::spawn(parent, &asset_server);
     });
 }
 

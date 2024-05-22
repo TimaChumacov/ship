@@ -23,16 +23,18 @@ pub fn spawn_player(
         }, 
         Player {},
     )).with_children(|parent|{
-        for x in ship_layout.blocks.iter() {
-            for y in x.iter() {
+        for (a_usize, x) in ship_layout.blocks.iter().enumerate() {
+            for (b_usize, y) in x.iter().enumerate() {
                 if let Some(y) = y {
-                    y.spawn(Vec3::ZERO, parent, &asset_server);
+                    let (a, b) = (a_usize as f32, b_usize as f32);
+                    y.spawn(
+                        Vec3::new(a * 32.0 - 64.0, b * -32.0 + 64.0, 0.0), 
+                        parent, 
+                        &asset_server
+                    );
                 }
             }
         }
-        // Core::spawn(parent, &asset_server);
-        // Harvester::spawn(parent, &asset_server);
-        // Turret::spawn(parent, &asset_server);
     });
 }
 

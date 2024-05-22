@@ -12,7 +12,7 @@ impl Spawn for Core {
     ) {
         parent.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                transform: Transform::from_translation(spawn_pos),
                 texture: asset_server.load("sprites/base.png"),
                 ..default()
             },

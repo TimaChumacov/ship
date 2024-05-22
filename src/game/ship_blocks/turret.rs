@@ -1,17 +1,18 @@
 use bevy::prelude::*;
-use super:: components::Block;
+use super:: components::{Block, Spawn};
 
 #[derive(Component)]
 pub struct Turret {}
 
-impl Turret {
-    pub fn spawn(
+impl Spawn for Turret {
+    fn spawn(
+        spawn_pos: Vec3,
         parent: &mut ChildBuilder,
         asset_server: &Res<AssetServer>,
     ) {
         parent.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz(0.0, 32.0, 0.0),
+                transform: Transform::from_translation(spawn_pos),
                 texture: asset_server.load("sprites/turret.png"),
                 ..default()
             },

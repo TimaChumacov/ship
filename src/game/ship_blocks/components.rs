@@ -14,8 +14,8 @@ pub trait Spawn {
 #[derive(Clone)]
 pub enum Blocks {
     Core,
-    // Turret,
-    // Harvester,
+    Turret,
+    Harvester,
 }
 
 impl Blocks {
@@ -27,8 +27,8 @@ impl Blocks {
         ) {
         match self {
             Self::Core => Core::spawn(spawn_pos, parent, asset_server),
-            // Self::Turret => Turret::spawn(spawn_pos, parent, asset_server),
-            // Self::Harvester => Harvester::spawn(spawn_pos, parent, asset_server),
+            Self::Turret => Turret::spawn(spawn_pos, parent, asset_server),
+            Self::Harvester => Harvester::spawn(spawn_pos, parent, asset_server),
         }
     }
 }

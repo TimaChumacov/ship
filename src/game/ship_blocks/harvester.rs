@@ -29,6 +29,18 @@ impl Spawn for Harvester {
             ));
         });
     }
+
+    fn spawn_ui(
+        parent: &mut ChildBuilder, 
+        asset_server: &Res<AssetServer>
+    ) {
+        parent.spawn(
+            ImageBundle {
+                image: asset_server.load("sprites/grappler.png").into(),
+                ..default()
+            }
+        );
+    }
 }
 
 #[derive(Component)]

@@ -20,6 +20,18 @@ impl Spawn for Turret {
             Turret {},
         ));
     }
+
+    fn spawn_ui(
+        parent: &mut ChildBuilder, 
+        asset_server: &Res<AssetServer>
+    ) {
+        parent.spawn(
+            ImageBundle {
+                image: asset_server.load("sprites/turret.png").into(),
+                ..default()
+            }
+        );
+    }
 }
 
 #[derive(Component)]

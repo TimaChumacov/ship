@@ -27,4 +27,16 @@ impl Spawn for Core {
             );
         });
     }
+
+    fn spawn_ui(
+        parent: &mut ChildBuilder, 
+        asset_server: &Res<AssetServer>
+    ) {
+        parent.spawn(
+            ImageBundle {
+                image: asset_server.load("sprites/core.png").into(),
+                ..default()
+            }
+        );
+    }
 }

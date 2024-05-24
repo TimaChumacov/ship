@@ -12,7 +12,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ShipLayout>()
-            .add_startup_system(spawn_player)
-            .add_system(player_movement);
+            .add_systems(Startup, spawn_player)
+            .add_systems(Update, player_movement);
     }
 }

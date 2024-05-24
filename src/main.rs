@@ -14,8 +14,8 @@ fn main() {
         .add_plugins(DefaultPlugins.set( 
             ImagePlugin::default_nearest(), 
         )) 
-        .add_plugin(GeneralPlugin)
-        .add_plugin(GamePlugin)
-        .add_plugin(UiPlugin)
+        .add_plugins(GeneralPlugin)
+        .add_plugins(GamePlugin)
+        .add_plugins(UiPlugin)
         .run()
 }

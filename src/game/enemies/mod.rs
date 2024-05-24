@@ -13,7 +13,6 @@ pub struct EnemySpawnerPlugin;
 impl Plugin for EnemySpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<EnemySpawnTimer>()
-            .add_system(spawn_enemies)
-            .add_system(enemy_movement);
+            .add_systems(Update, (spawn_enemies, enemy_movement));
     }
 }

@@ -16,8 +16,6 @@ pub struct ShipBlocksPlugin;
 impl Plugin for ShipBlocksPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TurretTimer>()
-        .add_system(turret_logic)
-        .add_system(bullet_logic)
-        .add_system(harvester_logic);
+        .add_systems(Update, (turret_logic, bullet_logic, harvester_logic));
     }
 }

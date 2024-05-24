@@ -18,9 +18,11 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(PlayerPlugin)
-            .add_plugin(EnemySpawnerPlugin)
-            .add_plugin(ShipBlocksPlugin)
-            .add_system(update_destructibles);
+        app.add_plugins((
+            PlayerPlugin, 
+            EnemySpawnerPlugin, 
+            ShipBlocksPlugin
+        ))
+        .add_systems(Update, update_destructibles);
     }
 }

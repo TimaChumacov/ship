@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use crate::game::components::Destructible;
 use super::components::{Enemy, ChaseBehavior};
 
-
 #[derive(Component)]
 pub struct Enemy1 {}
 

@@ -1,10 +1,11 @@
 use bevy::{a11y::accesskit::Node, prelude::*, transform::commands};
-use super::{components::ShipEditMenu, styles::{BLOCK, MAIN_COLOR, MENU, WRAPP, WRAPP_BG_COLOR}};
+use super::components::*;
+use super::styles::*;
 use crate::game::player::components::ShipLayout;
 
 pub fn show_or_hide_ui(
     mut commands: Commands,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     ui_query: Query<Entity, With<ShipEditMenu>>,
     ship_layout: Res<ShipLayout>,
     asset_server: Res<AssetServer>
@@ -25,7 +26,7 @@ fn spawn_ui(
 ) {
     commands.spawn((
         NodeBundle {
-            style: WRAPP,
+            style: wrapp(),
             background_color: WRAPP_BG_COLOR.into(),
             ..default()
         },
@@ -33,7 +34,7 @@ fn spawn_ui(
     )).with_children(|parent| {
         parent.spawn(
             NodeBundle {
-                style: MENU,
+                style: menu(),
                 background_color: MAIN_COLOR.into(),
                 ..default()
             }
@@ -41,13 +42,17 @@ fn spawn_ui(
             for (a_usize, x) in ship_layout.blocks.iter().enumerate() {
                 for (b_usize, y) in x.iter().enumerate() {
                     let (a , b) = (a_usize as f32, b_usize as f32);
-                    parent.spawn(
-                        NodeBundle {
-                            style: BLOCK,
+                    parent.spawn((
+                        ButtonBundle {
+                            style: block(),
                             background_color: WRAPP_BG_COLOR.into(),
                             ..default()
-                        }
-                    ).with_children(|parent| {
+                        },
+                        UiBlock {
+                            x: a_usize,
+                            y: b_usize,
+                        },
+                    )).with_children(|parent| {
                         if let Some(y) = y {
                             y.spawn_ui(parent, &asset_server);
                         } 

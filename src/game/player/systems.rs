@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{input::keyboard::KeyboardInput, prelude::*};
 use bevy::window::PrimaryWindow;
 use super::components::*;
 use crate::game::ship_blocks::{components::Blocks, core::Core, harvester::Harvester, turret::Turret};
@@ -23,37 +23,26 @@ pub fn spawn_player(
         }, 
         Player {},
     )).with_children(|parent|{
-        for (a_usize, x) in ship_layout.blocks.iter().enumerate() {
-            for (b_usize, y) in x.iter().enumerate() {
-                if let Some(y) = y {
-                    let (a, b) = (a_usize as f32, b_usize as f32);
-                    y.spawn(
-                        Vec3::new(a * 32.0 - 64.0, b * -32.0 + 64.0, 0.0), 
-                        parent, 
-                        &asset_server
-                    );
-                }
-            }
-        }
+        ship_layout.update_ship(parent, asset_server);
     });
 }
 
 pub fn player_movement(
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<&mut Transform, With<Player>>,
     time: Res<Time>,
 ) {
     if let Ok(mut player_transform) = player_query.get_single_mut() {
-        if keyboard_input.pressed(KeyCode::W) {
+        if keyboard_input.pressed(KeyCode::KeyW) {
             player_transform.translation.y += PLAYER_SPEED * time.delta_seconds();
         }
-        if keyboard_input.pressed(KeyCode::A) {
+        if keyboard_input.pressed(KeyCode::KeyA) {
             player_transform.translation.x -= PLAYER_SPEED * time.delta_seconds();
         }
-        if keyboard_input.pressed(KeyCode::S) {
+        if keyboard_input.pressed(KeyCode::KeyS) {
             player_transform.translation.y -= PLAYER_SPEED * time.delta_seconds();
         }
-        if keyboard_input.pressed(KeyCode::D) {
+        if keyboard_input.pressed(KeyCode::KeyD) {
             player_transform.translation.x += PLAYER_SPEED * time.delta_seconds();
         }
     }

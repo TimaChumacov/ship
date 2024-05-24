@@ -1,5 +1,8 @@
 use bevy::prelude::*;
 
+pub mod systems;
+use systems::*;
+
 pub mod components;
 pub mod styles;
 
@@ -9,6 +12,6 @@ pub struct ShipEditUiPlugin;
 
 impl Plugin for ShipEditUiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(show_or_hide_ui);
+        app.add_systems(Update, (show_or_hide_ui, interact_with_ui_blocks));
     }
 }

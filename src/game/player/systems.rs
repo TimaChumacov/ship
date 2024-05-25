@@ -23,7 +23,7 @@ pub fn spawn_player(
         }, 
         Player {},
     )).with_children(|parent|{
-        ship_layout.update_ship(parent, asset_server);
+        ship_layout.spawn_ship(parent, asset_server);
     });
 }
 

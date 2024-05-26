@@ -21,7 +21,7 @@ impl Spawn for Harvester {
         )).with_children(|parent| {
             parent.spawn((
                 SpriteBundle {
-                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                    transform: Transform::from_xyz(0.0, 0.0, 1.0),
                     texture: asset_server.load("sprites/grappler.png"),
                     ..default()
                 },

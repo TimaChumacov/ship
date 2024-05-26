@@ -2,7 +2,10 @@ use bevy::prelude::*;
 use super::components::{Block, Spawn};
 
 #[derive(Component)]
-pub struct Core {}
+pub struct Core {
+    // pub level: i8,
+    // pub rotation: f32,
+}
 
 impl Spawn for Core {
     fn spawn(
@@ -20,7 +23,7 @@ impl Spawn for Core {
         )).with_children(|parent| {
             parent.spawn(
                 SpriteBundle {
-                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                    transform: Transform::from_xyz(0.0, 0.0, 1.0),
                     texture: asset_server.load("sprites/core.png"),
                     ..default()
                 }

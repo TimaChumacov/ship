@@ -16,7 +16,7 @@ pub trait Spawn {
        asset_server: &Res<AssetServer>
     );
 }
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Blocks {
     Core,
     Turret,

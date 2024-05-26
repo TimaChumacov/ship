@@ -15,6 +15,9 @@ pub fn interact_with_ui_blocks(
         match *interaction {
             Interaction::Pressed => {
                 *border_color = Color::PURPLE.into();
+                if ship_layout.old_blocks_empty() {
+                    ship_layout.old_blocks = ship_layout.blocks.clone();
+                }
                 ship_layout.blocks[ui_block.x][ui_block.y] = Some(Blocks::Core);
             },
             Interaction::Hovered => {

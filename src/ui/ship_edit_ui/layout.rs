@@ -7,17 +7,18 @@ pub fn show_or_hide_ui(
     mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     ui_query: Query<Entity, With<ShipEditMenu>>,
-    ship_layout: Res<ShipLayout>,
+    mut ship_layout: ResMut<ShipLayout>,
     asset_server: Res<AssetServer>,
-    ship_query: Query<Entity, With<Ship>>,
     player_query: Query<Entity, With<Player>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         if let Ok(ui_entity) = ui_query.get_single() {
             commands.entity(ui_entity).despawn_recursive();
-            ship_layout.update_ship(commands, ship_query, player_query, &asset_server)
+            if !ship_layout.old_blocks_empty() {
+                ship_layout.update_ship(commands, &player_query, &asset_server)
+            }
         } else {
-            spawn_ui(commands, ship_layout, asset_server)
+            spawn_ui(commands, ship_layout.into(), asset_server)
         }
     }
 }
@@ -56,7 +57,11 @@ fn spawn_ui(
                             y: b_usize,
                         },
                     )).with_children(|parent| {
+                        // if ship_layout.blocks[b_usize][a_usize].is_some() {
+                        //     ship_layout.blocks[b_usize][a_usize].unwrap().spawn_ui(parent, &asset_server);
+                        // }
                         if let Some(y) = y {
+                            //if ship_layout.blocks[b_usize][a_usize].is_some() {};
                             y.spawn_ui(parent, &asset_server);
                         } 
                     });

@@ -1,4 +1,5 @@
 use bevy::{a11y::accesskit::Node, prelude::*, transform::commands};
+use crate::general::states::PauseState;
 use super::components::*;
 use super::styles::*;
 use crate::game::player::components::*;
@@ -6,19 +7,28 @@ use crate::game::player::components::*;
 pub fn show_or_hide_ui(
     mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    state: Res<State<PauseState>>,
+    mut next_state: ResMut<NextState<PauseState>>,
     ui_query: Query<Entity, With<ShipEditMenu>>,
     mut ship_layout: ResMut<ShipLayout>,
     asset_server: Res<AssetServer>,
-    player_query: Query<Entity, With<Player>>,
+    player_entity_query: Query<Entity, With<Player>>,
+    player_query: Query<&Player>
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
-        if let Ok(ui_entity) = ui_query.get_single() {
-            commands.entity(ui_entity).despawn_recursive();
-            if !ship_layout.old_blocks_empty() {
-                ship_layout.update_ship(commands, &player_query, &asset_server)
+        match state.get() {
+            PauseState::Running => {
+                next_state.set(PauseState::Paused);
+                spawn_ui(commands, ship_layout.into(), asset_server, player_query)
             }
-        } else {
-            spawn_ui(commands, ship_layout.into(), asset_server)
+            PauseState::Paused => {
+                next_state.set(PauseState::Running);
+                let ui_entity = ui_query.single();
+                commands.entity(ui_entity).despawn_recursive();
+                if !ship_layout.old_blocks_empty() {
+                    ship_layout.update_ship(commands, &player_entity_query, &asset_server)
+                }
+            }    
         }
     }
 }
@@ -26,7 +36,8 @@ pub fn show_or_hide_ui(
 fn spawn_ui(
     mut commands: Commands,
     ship_layout: Res<ShipLayout>,
-    asset_server: Res<AssetServer>
+    asset_server: Res<AssetServer>,
+    player_query: Query<&Player>
 ) {
     commands.spawn((
         NodeBundle {
@@ -36,9 +47,18 @@ fn spawn_ui(
         },
         ShipEditMenu {}
     )).with_children(|parent| {
+        // --- left info menu ---
         parent.spawn(
             NodeBundle {
-                style: menu(),
+                style: side_menu(),
+                background_color: MAIN_COLOR.into(),
+                ..default()
+            }
+        );
+        // --- grid edit menu ---
+        parent.spawn(
+            NodeBundle {
+                style: grid_menu(),
                 background_color: MAIN_COLOR.into(),
                 ..default()
             }
@@ -57,16 +77,36 @@ fn spawn_ui(
                             y: b_usize,
                         },
                     )).with_children(|parent| {
-                        // if ship_layout.blocks[b_usize][a_usize].is_some() {
-                        //     ship_layout.blocks[b_usize][a_usize].unwrap().spawn_ui(parent, &asset_server);
-                        // }
                         if let Some(y) = y {
-                            //if ship_layout.blocks[b_usize][a_usize].is_some() {};
                             y.spawn_ui(parent, &asset_server);
                         } 
                     });
                 };
             };
+        });
+        // --- right selection menu ---
+        parent.spawn(
+            NodeBundle {
+                style: side_menu(),
+                background_color: MAIN_COLOR.into(),
+                ..default()
+            }
+        ).with_children(|parent| {
+            let player = player_query.single();
+            for (i, loot) in player.looted_blocks.iter().enumerate() {
+                parent.spawn((
+                    ButtonBundle {
+                        style: mini_block(),
+                        background_color: WRAPP_BG_COLOR.into(),
+                        ..default()
+                    },
+                    SmallUiBlock {
+                        index: i
+                    }
+                )).with_children(|parent| {
+                    loot.spawn_ui(parent, &asset_server)
+                });
+            }
         });
     });
 }

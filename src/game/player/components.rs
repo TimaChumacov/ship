@@ -4,7 +4,23 @@ use crate::game::ship_blocks::components::Blocks;
 pub const PLAYER_SPEED: f32 = 100.0;
 
 #[derive(Component)]
-pub struct Player {}
+pub struct Player {
+    pub looted_blocks: Vec<Blocks>,
+    pub selected_loot: Option<Blocks>,
+}
+
+impl Default for Player {
+    fn default() -> Self {
+        Player {
+            looted_blocks: vec![
+                Blocks::Core,
+                Blocks::Turret,
+                Blocks::Harvester
+            ],
+            selected_loot: None,
+        }
+    }
+}
 
 #[derive(Component)]
 pub struct Ship {}
@@ -20,7 +36,7 @@ impl Default for ShipLayout {
         let mut blocks: Vec<Vec<Option<Blocks>>> = vec![vec![None; 5]; 5];
         blocks[1][0] = Some(Blocks::Core);
         blocks[1][2] = Some(Blocks::Turret);
-        blocks[4][4] = Some(Blocks::Harvester);
+        blocks[3][4] = Some(Blocks::Harvester);
         ShipLayout {
             blocks: blocks,
             old_blocks: vec![vec![None]],
@@ -96,6 +112,7 @@ impl ShipLayout {
                 }
             }
         }
+        self.old_blocks = vec![vec![None]];
     }
 
     pub fn old_blocks_empty(&self) -> bool {

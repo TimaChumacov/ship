@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::general::states::PauseState;
 
 pub mod components;
 mod systems;
@@ -22,7 +23,8 @@ impl Plugin for GamePlugin {
             PlayerPlugin, 
             EnemySpawnerPlugin, 
             ShipBlocksPlugin
-        ))
-        .add_systems(Update, update_destructibles);
+        )
+    )
+        .add_systems(Update, (update_destructibles).run_if(in_state(PauseState::Running)));
     }
 }

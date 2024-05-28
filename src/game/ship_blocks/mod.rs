@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::general::states::PauseState;
 
 pub mod components;
 
@@ -16,6 +17,6 @@ pub struct ShipBlocksPlugin;
 impl Plugin for ShipBlocksPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TurretTimer>()
-        .add_systems(Update, (turret_logic, bullet_logic, harvester_logic));
+        .add_systems(Update, (turret_logic, bullet_logic, harvester_logic).run_if(in_state(PauseState::Running)));
     }
 }

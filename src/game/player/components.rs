@@ -1,24 +1,95 @@
 use bevy::{ecs::entity, prelude::*, transform::commands};
-use crate::game::ship_blocks::components::Blocks;
+use crate::ui::ship_edit_ui::components::LootMenu;
+use crate::{game::ship_blocks::components::Blocks, ui::ship_edit_ui::components::LootUiBlock};
+use crate::ui::ship_edit_ui::styles::*;
 
 pub const PLAYER_SPEED: f32 = 100.0;
 
 #[derive(Component)]
-pub struct Player {
+pub struct Player {}
+
+#[derive(Resource)]
+pub struct PlayerResource {
     pub looted_blocks: Vec<Blocks>,
-    pub selected_loot: Option<Blocks>,
+    pub selected_loot_index: Option<usize>,
 }
 
-impl Default for Player {
+impl Default for PlayerResource {
     fn default() -> Self {
-        Player {
+        PlayerResource {
             looted_blocks: vec![
                 Blocks::Core,
                 Blocks::Turret,
                 Blocks::Harvester
             ],
-            selected_loot: None,
+            selected_loot_index: None,
         }
+    }
+}
+
+impl PlayerResource {
+    pub fn get_selected_loot(&self) -> Option<&Blocks>{
+        match self.selected_loot_index {
+            Some(index) => {Some(&self.looted_blocks[index])}
+            None => {None}
+        }
+    }
+
+    pub fn remove_used_loot(
+        &mut self,
+        // mut commands: Commands,
+        // mut loot_ui_blocks_query: Query<(Entity, &mut LootUiBlock)>
+    ) {
+        // for (loot_ui_entity, mut loot_ui_block) in loot_ui_blocks_query.iter_mut() {
+        //     if loot_ui_block.index == self.selected_loot_index.unwrap() {
+        //         commands.entity(loot_ui_entity).despawn_recursive();
+        //     } else if loot_ui_block.index > self.selected_loot_index.unwrap() {
+        //         loot_ui_block.index -= 1;
+        //     }
+        // }
+        self.looted_blocks.remove(self.selected_loot_index.unwrap());
+        self.selected_loot_index = None;
+    }
+
+    pub fn reset_loot_ui(
+        &self,
+        commands: &mut Commands,
+        loot_menu_query: &Query<Entity, With<LootMenu>>,
+        asset_server: &Res<AssetServer>,
+    ) {
+        let loot_menu_entity = loot_menu_query.single();
+        commands.entity(loot_menu_entity).despawn_descendants();
+        commands.entity(loot_menu_entity).with_children(|parent| {
+            self.spawn_loot_ui(parent, asset_server)
+        });
+    }
+
+    pub fn spawn_loot_ui(
+        &self,
+        parent: &mut ChildBuilder,
+        asset_server: &Res<AssetServer>,
+    ) {
+        for (i, loot) in self.looted_blocks.iter().enumerate() {
+            parent.spawn((
+                ButtonBundle {
+                    style: mini_block(),
+                    background_color: WRAPP_BG_COLOR.into(),
+                    ..default()
+                },
+                LootUiBlock {
+                    index: i
+                }
+            )).with_children(|parent| {
+                loot.spawn_ui(parent, asset_server)
+            });
+        }
+    }
+
+    pub fn put_block_in_loot(
+        &mut self,
+        target_block: &Blocks,
+    ) {
+        self.looted_blocks.push(target_block.clone());
     }
 }
 

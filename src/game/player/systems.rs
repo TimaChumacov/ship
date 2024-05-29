@@ -21,7 +21,7 @@ pub fn spawn_player(
             texture: asset_server.load("sprites/grid.png"),
             ..default()
         }, 
-        Player::default()
+        Player {}
     )).with_children(|parent|{
         ship_layout.spawn_ship(parent, &asset_server);
     });

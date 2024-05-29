@@ -12,21 +12,21 @@ pub fn show_or_hide_ui(
     ui_query: Query<Entity, With<ShipEditMenu>>,
     mut ship_layout: ResMut<ShipLayout>,
     asset_server: Res<AssetServer>,
-    player_entity_query: Query<Entity, With<Player>>,
-    player_query: Query<&Player>
+    player_query: Query<Entity, With<Player>>,
+    player_res: Res<PlayerResource>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         match state.get() {
             PauseState::Running => {
                 next_state.set(PauseState::Paused);
-                spawn_ui(commands, ship_layout.into(), asset_server, player_query)
+                spawn_ui(commands, ship_layout.into(), asset_server, player_res)
             }
             PauseState::Paused => {
                 next_state.set(PauseState::Running);
                 let ui_entity = ui_query.single();
                 commands.entity(ui_entity).despawn_recursive();
                 if !ship_layout.old_blocks_empty() {
-                    ship_layout.update_ship(commands, &player_entity_query, &asset_server)
+                    ship_layout.update_ship(commands, &player_query, &asset_server)
                 }
             }    
         }
@@ -37,7 +37,7 @@ fn spawn_ui(
     mut commands: Commands,
     ship_layout: Res<ShipLayout>,
     asset_server: Res<AssetServer>,
-    player_query: Query<&Player>
+    player_res: Res<PlayerResource>,
 ) {
     commands.spawn((
         NodeBundle {
@@ -85,28 +85,15 @@ fn spawn_ui(
             };
         });
         // --- right selection menu ---
-        parent.spawn(
+        parent.spawn((
             NodeBundle {
                 style: side_menu(),
                 background_color: MAIN_COLOR.into(),
                 ..default()
-            }
-        ).with_children(|parent| {
-            let player = player_query.single();
-            for (i, loot) in player.looted_blocks.iter().enumerate() {
-                parent.spawn((
-                    ButtonBundle {
-                        style: mini_block(),
-                        background_color: WRAPP_BG_COLOR.into(),
-                        ..default()
-                    },
-                    SmallUiBlock {
-                        index: i
-                    }
-                )).with_children(|parent| {
-                    loot.spawn_ui(parent, &asset_server)
-                });
-            }
+            },
+            LootMenu {}
+        )).with_children(|parent| {
+            player_res.spawn_loot_ui(parent, &asset_server);
         });
     });
 }

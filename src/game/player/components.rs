@@ -1,5 +1,5 @@
 use bevy::{ecs::entity, prelude::*, transform::commands};
-use crate::ui::ship_edit_ui::components::LootMenu;
+use crate::ui::ship_edit_ui::components::{LootMenu, SelectedLootUi};
 use crate::{game::ship_blocks::components::Blocks, ui::ship_edit_ui::components::LootUiBlock};
 use crate::ui::ship_edit_ui::styles::*;
 
@@ -35,20 +35,37 @@ impl PlayerResource {
         }
     }
 
+    pub fn select_loot(
+        &mut self, 
+        target_index: usize,
+        commands: &mut Commands,
+        selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+        asset_server: &Res<AssetServer>
+    ) {
+        self.selected_loot_index = Some(target_index);
+        let selected_loot_ui_entity = selected_loot_ui.single();
+        commands.entity(selected_loot_ui_entity).with_children(|parent| {
+            self.looted_blocks[target_index].spawn_ui(parent, asset_server);
+        });
+    }
+
+    pub fn deselect_loot(
+        &mut self, 
+        commands: &mut Commands,
+        selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+    ) {
+        self.selected_loot_index = None;
+        let selected_loot_ui_entity = selected_loot_ui.single();
+        commands.entity(selected_loot_ui_entity).despawn_descendants();
+    }
+
     pub fn remove_used_loot(
         &mut self,
-        // mut commands: Commands,
-        // mut loot_ui_blocks_query: Query<(Entity, &mut LootUiBlock)>
+        commands: &mut Commands,
+        selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
     ) {
-        // for (loot_ui_entity, mut loot_ui_block) in loot_ui_blocks_query.iter_mut() {
-        //     if loot_ui_block.index == self.selected_loot_index.unwrap() {
-        //         commands.entity(loot_ui_entity).despawn_recursive();
-        //     } else if loot_ui_block.index > self.selected_loot_index.unwrap() {
-        //         loot_ui_block.index -= 1;
-        //     }
-        // }
         self.looted_blocks.remove(self.selected_loot_index.unwrap());
-        self.selected_loot_index = None;
+        self.deselect_loot(commands, selected_loot_ui);
     }
 
     pub fn reset_loot_ui(
@@ -73,7 +90,7 @@ impl PlayerResource {
             parent.spawn((
                 ButtonBundle {
                     style: mini_block(),
-                    background_color: WRAPP_BG_COLOR.into(),
+                    background_color: BLOCK_COLOR.into(),
                     ..default()
                 },
                 LootUiBlock {

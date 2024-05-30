@@ -19,3 +19,9 @@ pub struct LootUiBlock {
     // index of the loot from Player.looted_blocks that this ui block represents
     pub index: usize,
 }
+
+#[derive(Component)]
+pub struct SelectedLootUi {}
+
+#[derive(Component)]
+pub struct DeselectButton {}

@@ -1,3 +1,4 @@
+use bevy::log::tracing_subscriber::fmt::TestWriter;
 use bevy::{a11y::accesskit::Node, prelude::*, transform::commands};
 use crate::general::states::PauseState;
 use super::components::*;
@@ -42,7 +43,7 @@ fn spawn_ui(
     commands.spawn((
         NodeBundle {
             style: wrapp(),
-            background_color: WRAPP_BG_COLOR.into(),
+            background_color: BLOCK_COLOR.into(),
             ..default()
         },
         ShipEditMenu {}
@@ -50,11 +51,60 @@ fn spawn_ui(
         // --- left info menu ---
         parent.spawn(
             NodeBundle {
-                style: side_menu(),
+                style: info_menu(),
                 background_color: MAIN_COLOR.into(),
                 ..default()
             }
-        );
+        ).with_children(|parent| {
+            // --- Title: Block Name ---
+            parent.spawn(
+                TextBundle {
+                    text: Text {
+                        sections: vec![TextSection::new("Title", title())],
+                        ..default()
+                    },
+                    ..default()
+                }
+            );
+            // --- Image: Block Sprite ---
+            parent.spawn((
+                NodeBundle {
+                    style: block(),
+                    background_color: BLOCK_COLOR.into(),
+                    ..default()
+                },
+                SelectedLootUi {}
+            ));
+            // --- Button: deselect selected block ---
+            parent.spawn((
+                ButtonBundle {
+                    style: unselect_button(),
+                    background_color: BLOCK_COLOR.into(),
+                    ..default()
+                },
+                DeselectButton {}
+            )).with_children(|parent| {
+                parent.spawn(
+                    TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new("Deselect", text())],
+                            ..default()
+                        },
+                        ..default()
+                    }
+                );
+            });
+            // --- Text: Block description ---
+            parent.spawn(
+                TextBundle {
+                    text: Text {
+                        sections: vec![TextSection::new("", text())],
+                        ..default()
+                    },
+                    ..default()
+                }
+            );
+        });
         // --- grid edit menu ---
         parent.spawn(
             NodeBundle {
@@ -69,7 +119,7 @@ fn spawn_ui(
                     parent.spawn((
                         ButtonBundle {
                             style: block(),
-                            background_color: WRAPP_BG_COLOR.into(),
+                            background_color: BLOCK_COLOR.into(),
                             ..default()
                         },
                         UiBlock {
@@ -87,7 +137,7 @@ fn spawn_ui(
         // --- right selection menu ---
         parent.spawn((
             NodeBundle {
-                style: side_menu(),
+                style: loot_menu(),
                 background_color: MAIN_COLOR.into(),
                 ..default()
             },

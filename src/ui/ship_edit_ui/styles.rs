@@ -1,6 +1,6 @@
-use bevy::prelude::*;
+use bevy::{log::tracing_subscriber::fmt::TestWriter, prelude::*};
 
-pub const WRAPP_BG_COLOR: Color = Color::rgba(0.0, 0.0, 0.0, 0.3);
+pub const BLOCK_COLOR: Color = Color::rgba(0.0, 0.0, 0.0, 0.3);
 pub const MAIN_COLOR: Color = Color::rgb(245.0, 220.0, 220.0);
 
 pub fn wrapp() -> Style {
@@ -26,7 +26,7 @@ pub fn grid_menu() -> Style {
     }
 }
 
-pub fn side_menu() -> Style {
+pub fn loot_menu() -> Style {
     Style {
     width: Val::Px(350.0), 
     height: Val::Px(600.0),
@@ -37,6 +37,14 @@ pub fn side_menu() -> Style {
     align_content: AlignContent::FlexStart,
     ..Style::DEFAULT
     }
+}
+
+pub fn info_menu() -> Style {
+    let mut style = loot_menu();
+    style.flex_direction = FlexDirection::Column;
+    style.align_items = AlignItems::Center;
+
+    style
 }
 
 pub fn block() -> Style {
@@ -55,5 +63,29 @@ pub fn mini_block() -> Style {
     margin: UiRect::all(Val::Px(5.0)),
     border: UiRect::all(Val::Px(3.0)),
     ..Style::DEFAULT
+    }
+}
+
+pub fn unselect_button() -> Style {
+    Style {
+        width: Val::Px(100.0),
+        height: Val::Px(20.0),
+        ..Style::DEFAULT
+    }
+}
+
+pub fn text() -> TextStyle{
+    TextStyle {
+        font_size: 20.0,
+        color: Color::BLACK,
+        ..default()
+    }
+}
+
+pub fn title() -> TextStyle{
+    TextStyle {
+        font_size: 35.0,
+        color: Color::BLACK,
+        ..default()
     }
 }

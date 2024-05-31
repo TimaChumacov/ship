@@ -1,11 +1,25 @@
 use bevy::prelude::*;
-use super::components::{Block, Spawn};
+use super::{components::Block, traits::*};
+
+#[derive(Component, Clone, PartialEq)]
+pub struct Harvester {
+    pub rotation: f32,
+}
 
 #[derive(Component)]
-pub struct Harvester {}
+pub struct Grappler {}
+
+impl Default for Harvester {
+    fn default() -> Self {
+        Harvester {
+            rotation: 0.0
+        }
+    }
+}
 
 impl Spawn for Harvester {
     fn spawn(
+        &self,
         spawn_pos: Vec3,
         parent: &mut ChildBuilder,
         asset_server: &Res<AssetServer>,
@@ -17,7 +31,7 @@ impl Spawn for Harvester {
                 ..default()
             },
             Block {},
-            Harvester {},
+            Harvester::default(),
         )).with_children(|parent| {
             parent.spawn((
                 SpriteBundle {
@@ -31,6 +45,7 @@ impl Spawn for Harvester {
     }
 
     fn spawn_ui(
+        &self,
         parent: &mut ChildBuilder, 
         asset_server: &Res<AssetServer>
     ) {
@@ -43,5 +58,12 @@ impl Spawn for Harvester {
     }
 }
 
-#[derive(Component)]
-pub struct Grappler {}
+impl Rotate for Harvester {
+    fn get_rotation(&self) -> f32 {
+        self.rotation
+    }
+
+    fn rotate_90_right(&mut self) {
+        self.rotation += 90.0
+    }
+}

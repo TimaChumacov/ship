@@ -1,14 +1,18 @@
 use bevy::prelude::*;
-use super::components::{Block, Spawn};
+use super::{components::Block, traits::Spawn};
 
-#[derive(Component)]
-pub struct Core {
-    // pub level: i8,
-    // pub rotation: f32,
+#[derive(Component, Clone, PartialEq)]
+pub struct Core {}
+
+impl Default for Core {
+    fn default() -> Self {
+        Core {}
+    }
 }
 
 impl Spawn for Core {
     fn spawn(
+        &self,
         spawn_pos: Vec3,
         parent: &mut ChildBuilder,
         asset_server: &Res<AssetServer>,
@@ -19,7 +23,8 @@ impl Spawn for Core {
                 texture: asset_server.load("sprites/base.png"),
                 ..default()
             },
-            Block {}
+            Block {},
+            Core::default(),
         )).with_children(|parent| {
             parent.spawn(
                 SpriteBundle {
@@ -32,6 +37,7 @@ impl Spawn for Core {
     }
 
     fn spawn_ui(
+        &self,
         parent: &mut ChildBuilder, 
         asset_server: &Res<AssetServer>
     ) {

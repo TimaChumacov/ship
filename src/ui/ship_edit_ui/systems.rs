@@ -1,15 +1,14 @@
+use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
-use bevy::transform::commands;
-
-use crate::game::player::components::{PlayerResource, ShipLayout};
-use crate::game::ship_blocks::components::Blocks;
+use crate::game::player::components::{PlayerLoot, ShipLayout};
+use crate::game::ship_blocks::traits::Spawn;
 use super::components::*;
 
 pub fn interact_with_ui_blocks(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ship_layout: ResMut<ShipLayout>,
-    mut player_res: ResMut<PlayerResource>,
+    mut player_loot: ResMut<PlayerLoot>,
     selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
     loot_menu_query: Query<Entity, With<LootMenu>>,
     mut button_query: Query<
@@ -27,20 +26,20 @@ pub fn interact_with_ui_blocks(
                 commands.entity(block_entity).despawn_descendants();
                 let mut pressed_block = ship_layout.blocks[ui_block.x][ui_block.y].clone();
                 if pressed_block == None {
-                    if let Some(selected_block) = player_res.get_selected_loot() {
+                    if let Some(selected_block) = player_loot.get_selected_loot() {
                         pressed_block = Some(selected_block.clone());
                         commands.entity(block_entity).with_children(|parent| {
                             selected_block.spawn_ui(parent, &asset_server)
                         });
-                        player_res.remove_used_loot(&mut commands, selected_loot_ui);
-                        player_res.reset_loot_ui(&mut commands, &loot_menu_query, &asset_server);
+                        player_loot.remove_used_loot(&mut commands, selected_loot_ui);
+                        player_loot.reset_loot_ui(&mut commands, &loot_menu_query, &asset_server);
                     }
                 } else {
-                    player_res.put_block_in_loot(&pressed_block.unwrap());
+                    player_loot.put_block_in_loot(&pressed_block.unwrap());
                     pressed_block = None;
                 }
                 ship_layout.blocks[ui_block.x][ui_block.y] = pressed_block;
-                player_res.reset_loot_ui(&mut commands, &loot_menu_query, &asset_server)
+                player_loot.reset_loot_ui(&mut commands, &loot_menu_query, &asset_server)
             },
             Interaction::Hovered => {
                 *border_color = Color::RED.into();
@@ -53,7 +52,7 @@ pub fn interact_with_ui_blocks(
 }
 
 pub fn interact_with_ui_loot(
-    mut player_res: ResMut<PlayerResource>,
+    mut player_loot: ResMut<PlayerLoot>,
     mut button_query: Query<
     (&Interaction, &mut BorderColor, &LootUiBlock),
     Changed<Interaction>
@@ -65,7 +64,7 @@ pub fn interact_with_ui_loot(
     if let Ok((interaction, mut border_color, small_ui_block)) = button_query.get_single_mut() {
         match *interaction {
             Interaction::Pressed => {
-                player_res.select_loot(small_ui_block.index, &mut commands, selected_loot_ui, &asset_server);
+                player_loot.select_loot(small_ui_block.index, &mut commands, selected_loot_ui, &asset_server);
                 *border_color = Color::PURPLE.into();
             },
             Interaction::Hovered => {
@@ -80,7 +79,7 @@ pub fn interact_with_ui_loot(
 
 pub fn deselect_button(
     mut commands: Commands,
-    mut player_res: ResMut<PlayerResource>,
+    mut player_loot: ResMut<PlayerLoot>,
     selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
     mut button_query: Query<
     (&Interaction, &mut BorderColor),
@@ -90,7 +89,7 @@ pub fn deselect_button(
     if let Ok((interaction, mut border_color)) = button_query.get_single_mut() {
         match *interaction {
             Interaction::Pressed => {
-                player_res.deselect_loot(&mut commands, selected_loot_ui);
+                player_loot.deselect_loot(&mut commands, selected_loot_ui);
                 *border_color = Color::PURPLE.into();
             },
             Interaction::Hovered => {
@@ -99,6 +98,18 @@ pub fn deselect_button(
             Interaction::None => {
                 *border_color = Color::NONE.into();
             }
+        }
+    }
+}
+
+pub fn rotate_loot(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut player_loot: ResMut<PlayerLoot>,
+) {
+    if keyboard_input.pressed(KeyCode::KeyR) {
+        // "if" here because the player can press R without selecting anything
+        if let Some(selected_loot) = player_loot.get_selected_loot() {
+            
         }
     }
 }

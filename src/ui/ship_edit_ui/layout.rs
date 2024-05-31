@@ -1,9 +1,9 @@
-use bevy::log::tracing_subscriber::fmt::TestWriter;
-use bevy::{a11y::accesskit::Node, prelude::*, transform::commands};
+use bevy::prelude::*;
 use crate::general::states::PauseState;
 use super::components::*;
 use super::styles::*;
 use crate::game::player::components::*;
+use crate::game::ship_blocks::traits::Spawn;
 
 pub fn show_or_hide_ui(
     mut commands: Commands,
@@ -14,13 +14,13 @@ pub fn show_or_hide_ui(
     mut ship_layout: ResMut<ShipLayout>,
     asset_server: Res<AssetServer>,
     player_query: Query<Entity, With<Player>>,
-    player_res: Res<PlayerResource>,
+    player_loot: Res<PlayerLoot>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         match state.get() {
             PauseState::Running => {
                 next_state.set(PauseState::Paused);
-                spawn_ui(commands, ship_layout.into(), asset_server, player_res)
+                spawn_ui(commands, ship_layout.into(), asset_server, player_loot)
             }
             PauseState::Paused => {
                 next_state.set(PauseState::Running);
@@ -38,7 +38,7 @@ fn spawn_ui(
     mut commands: Commands,
     ship_layout: Res<ShipLayout>,
     asset_server: Res<AssetServer>,
-    player_res: Res<PlayerResource>,
+    player_res: Res<PlayerLoot>,
 ) {
     commands.spawn((
         NodeBundle {

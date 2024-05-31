@@ -1,7 +1,12 @@
-use bevy::{ecs::entity, prelude::*, transform::commands};
+use std::default;
+
+use bevy::prelude::*;
+use crate::game::ship_blocks::core::Core;
+use crate::game::ship_blocks::harvester::Harvester;
+use crate::game::ship_blocks::turret::Turret;
 use crate::ui::ship_edit_ui::components::{LootMenu, SelectedLootUi};
-use crate::{game::ship_blocks::components::Blocks, ui::ship_edit_ui::components::LootUiBlock};
-use crate::ui::ship_edit_ui::styles::*;
+use crate::game::ship_blocks::{components::Blocks, traits::Spawn};
+use crate::ui::ship_edit_ui::{styles::*, components::LootUiBlock};
 
 pub const PLAYER_SPEED: f32 = 100.0;
 
@@ -9,25 +14,25 @@ pub const PLAYER_SPEED: f32 = 100.0;
 pub struct Player {}
 
 #[derive(Resource)]
-pub struct PlayerResource {
+pub struct PlayerLoot {
     pub looted_blocks: Vec<Blocks>,
     pub selected_loot_index: Option<usize>,
 }
 
-impl Default for PlayerResource {
+impl Default for PlayerLoot {
     fn default() -> Self {
-        PlayerResource {
+        PlayerLoot {
             looted_blocks: vec![
-                Blocks::Core,
-                Blocks::Turret,
-                Blocks::Harvester
+                Blocks::Core(Core::default()),
+                Blocks::Turret(Turret::default()),
+                Blocks::Harvester(Harvester::default())
             ],
             selected_loot_index: None,
         }
     }
 }
 
-impl PlayerResource {
+impl PlayerLoot {
     pub fn get_selected_loot(&self) -> Option<&Blocks>{
         match self.selected_loot_index {
             Some(index) => {Some(&self.looted_blocks[index])}
@@ -122,9 +127,9 @@ pub struct ShipLayout {
 impl Default for ShipLayout {
     fn default() -> Self {
         let mut blocks: Vec<Vec<Option<Blocks>>> = vec![vec![None; 5]; 5];
-        blocks[1][0] = Some(Blocks::Core);
-        blocks[1][2] = Some(Blocks::Turret);
-        blocks[3][4] = Some(Blocks::Harvester);
+        blocks[1][0] = Some(Blocks::Core(Core::default()));
+        blocks[1][2] = Some(Blocks::Turret(Turret::default()));
+        blocks[3][4] = Some(Blocks::Harvester(Harvester::default()));
         ShipLayout {
             blocks: blocks,
             old_blocks: vec![vec![None]],

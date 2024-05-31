@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use crate::general::states::PauseState;
 
 pub mod components;
+pub mod traits;
 
 pub mod harvester;
 pub mod core;

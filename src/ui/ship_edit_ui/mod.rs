@@ -18,6 +18,7 @@ impl Plugin for ShipEditUiPlugin {
             interact_with_ui_blocks.run_if(in_state(PauseState::Paused)),
             interact_with_ui_loot.run_if(in_state(PauseState::Paused)),
             deselect_button.run_if(in_state(PauseState::Paused)),
+            rotate_loot.run_if(in_state(PauseState::Paused)),
         ));
     }
 }

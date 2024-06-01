@@ -1,7 +1,7 @@
 use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 use crate::game::player::components::{PlayerLoot, ShipLayout};
-use crate::game::ship_blocks::traits::Spawn;
+use crate::game::ship_blocks::traits::{Rotate, Spawn};
 use super::components::*;
 
 pub fn interact_with_ui_blocks(
@@ -32,14 +32,14 @@ pub fn interact_with_ui_blocks(
                             selected_block.spawn_ui(parent, &asset_server)
                         });
                         player_loot.remove_used_loot(&mut commands, selected_loot_ui);
-                        player_loot.reset_loot_ui(&mut commands, &loot_menu_query, &asset_server);
+                        player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server);
                     }
                 } else {
                     player_loot.put_block_in_loot(&pressed_block.unwrap());
                     pressed_block = None;
                 }
                 ship_layout.blocks[ui_block.x][ui_block.y] = pressed_block;
-                player_loot.reset_loot_ui(&mut commands, &loot_menu_query, &asset_server)
+                player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server)
             },
             Interaction::Hovered => {
                 *border_color = Color::RED.into();
@@ -105,11 +105,15 @@ pub fn deselect_button(
 pub fn rotate_loot(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_loot: ResMut<PlayerLoot>,
+    mut commands: Commands,
+    selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+    asset_server: Res<AssetServer>
 ) {
-    if keyboard_input.pressed(KeyCode::KeyR) {
+    if keyboard_input.just_pressed(KeyCode::KeyR) {
         // "if" here because the player can press R without selecting anything
-        if let Some(selected_loot) = player_loot.get_selected_loot() {
-            
+        if let Some(selected_loot) = player_loot.get_selected_loot_mut() {
+            selected_loot.rotate_90_right();
+            player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, &asset_server);
         }
     }
 }

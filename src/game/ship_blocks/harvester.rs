@@ -35,7 +35,8 @@ impl Spawn for Harvester {
         )).with_children(|parent| {
             parent.spawn((
                 SpriteBundle {
-                    transform: Transform::from_xyz(0.0, 0.0, 1.0),
+                    transform: Transform::from_xyz(0.0, 0.0, 1.0)
+                                         .with_rotation(Quat::from_rotation_z(self.rotation.to_radians())),
                     texture: asset_server.load("sprites/grappler.png"),
                     ..default()
                 },
@@ -51,6 +52,7 @@ impl Spawn for Harvester {
     ) {
         parent.spawn(
             ImageBundle {
+                transform: Transform::from_rotation(Quat::from_rotation_z(self.rotation.to_radians())),
                 image: asset_server.load("sprites/grappler.png").into(),
                 ..default()
             }

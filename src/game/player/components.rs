@@ -40,6 +40,13 @@ impl PlayerLoot {
         }
     }
 
+    pub fn get_selected_loot_mut(&mut self) -> Option<&mut Blocks>{
+        match self.selected_loot_index {
+            Some(index) => {Some(&mut self.looted_blocks[index])}
+            None => {None}
+        }
+    }
+
     pub fn select_loot(
         &mut self, 
         target_index: usize,
@@ -64,6 +71,19 @@ impl PlayerLoot {
         commands.entity(selected_loot_ui_entity).despawn_descendants();
     }
 
+    pub fn redraw_selected_loot(
+        &self,
+        commands: &mut Commands,
+        selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+        asset_server: &Res<AssetServer>
+    ) {
+        let selected_loot_ui_entity = selected_loot_ui.single();
+        commands.entity(selected_loot_ui_entity).despawn_descendants();
+        commands.entity(selected_loot_ui_entity).with_children(|parent| {
+            self.get_selected_loot().unwrap().spawn_ui(parent, asset_server)
+        });
+    }
+
     pub fn remove_used_loot(
         &mut self,
         commands: &mut Commands,
@@ -73,7 +93,7 @@ impl PlayerLoot {
         self.deselect_loot(commands, selected_loot_ui);
     }
 
-    pub fn reset_loot_ui(
+    pub fn redraw_loot_ui(
         &self,
         commands: &mut Commands,
         loot_menu_query: &Query<Entity, With<LootMenu>>,

@@ -22,11 +22,7 @@ pub struct PlayerLoot {
 impl Default for PlayerLoot {
     fn default() -> Self {
         PlayerLoot {
-            looted_blocks: vec![
-                Blocks::Core(Core::default()),
-                Blocks::Turret(Turret::default()),
-                Blocks::Harvester(Harvester::default())
-            ],
+            looted_blocks: vec![],
             selected_loot_index: None,
         }
     }

@@ -1,25 +1,25 @@
 use bevy::prelude::*;
 use super::turret::{Turret, Bullet, TurretTimer};
-use super::harvester::{self, Harvester};
+use super::harvester::{self, Grappler, Harvester};
+use crate::game::ship_blocks::components::Blocks;
+use crate::game::player::components::PlayerLoot;
 use crate::game::{components::{Destructible, Loot}, enemies::components::Enemy};
 
 pub fn turret_logic(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    turret_query: Query<&GlobalTransform, With<Turret>>,
+    turret_query: Query<(&GlobalTransform, &Transform, &Turret)>,
     mut turret_timer: ResMut<TurretTimer>,
     time: Res<Time>
 ) {
     turret_timer.timer.tick(time.delta());
     if turret_timer.timer.finished() {
-        for turret_glob_transform in turret_query.iter() {
+        for (turret_glob_transform, turret_transform, turret) in turret_query.iter() {
             commands.spawn((
                 SpriteBundle {
-                    transform: Transform::from_xyz(
-                        turret_glob_transform.translation().x,
-                        turret_glob_transform.translation().y + 16.0,
-                        0.0
-                    ),
+                    transform: Transform::from_translation(
+                        turret_glob_transform.translation() + turret_transform.local_y() * 16.0
+                    ).with_rotation(turret_transform.rotation),
                     texture: asset_server.load("sprites/bullet.png"),
                     ..default()
                 },
@@ -40,7 +40,8 @@ pub fn bullet_logic(
     time: Res<Time>
 ) {
     for (mut bullet_transform, mut bullet_stats, bullet_entity) in bullet_query.iter_mut() {
-        bullet_transform.translation.y += bullet_stats.speed * time.delta_seconds();
+        let movement = bullet_transform.local_y() * bullet_stats.speed * time.delta_seconds();
+        bullet_transform.translation += movement;
         bullet_stats.lifetime -= time.delta_seconds();
         if bullet_stats.lifetime <= 0.0 {
             commands.entity(bullet_entity).despawn();
@@ -55,72 +56,49 @@ pub fn bullet_logic(
 
 pub fn harvester_logic(
     mut commands: Commands,
-    harvester_query: Query<&GlobalTransform, With<Harvester>>,
-    loot_query: Query<(&Transform, Entity), With<Loot>>
+    time: Res<Time>,
+    mut player_loot: ResMut<PlayerLoot>,
+    harvester_query: Query<(&Harvester, &Children)>,
+    mut grappler_query: Query<(&GlobalTransform, &mut Transform, &mut Grappler)>,
+    mut loot_query: Query<(&mut Transform, Entity), (With<Loot>, Without<Grappler>)>
 ) {
-    for (loot_transform, loot_entity) in loot_query.iter() {
-        for harvester_glob_transform in harvester_query.iter(){
-            if loot_transform.translation.distance(harvester_glob_transform.translation()) < 80.0 {
-                commands.entity(loot_entity).despawn();
+    for (mut loot_transform, loot_entity) in loot_query.iter_mut() {
+        for (harvester, children) in harvester_query.iter() {
+            for child in children.iter() {
+                let (grappler_glob_transform, mut grappler_transform, mut grappler) = grappler_query.get_mut(*child).unwrap();
+                let distance_to_loot = loot_transform.translation.distance(grappler_glob_transform.translation());
+                if distance_to_loot < 80.0 {
+                    if !grappler.is_looting {
+                        grappler.is_looting = true;
+                    } else {
+                        if !grappler.grabbed_loot {
+                            let dir = (loot_transform.translation - grappler_glob_transform.translation()).normalize();
+                            grappler_transform.translation += dir * time.delta_seconds() * 80.0;
+                            grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir);
+                            if distance_to_loot < 20.0 {
+                                grappler.grabbed_loot = true;
+                            }
+                        } else {
+                            let dir = -grappler_transform.translation.normalize();
+                            grappler_transform.translation += dir * time.delta_seconds() * 40.0;
+                            grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, -dir);
+                            loot_transform.translation = grappler_glob_transform.translation();
+                            loot_transform.rotation = grappler_transform.rotation;
+                            if grappler_transform.translation.length() < 5.0 {
+                                commands.entity(loot_entity).despawn();
+                                player_loot.put_block_in_loot(&Blocks::get_random_block());
+                                grappler.is_looting = false;
+                                grappler.grabbed_loot = false;
+                                grappler_transform.translation = Vec3::ZERO;
+                                grappler_transform.rotation = Quat::from_rotation_z(harvester.rotation.to_radians());
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
-
-// pub fn spawn_player(
-//     mut commands: Commands,
-//     window_query: Query<&Window, With<PrimaryWindow>>,
-//     asset_server: Res<AssetServer>,
-// ) {
-//     let window = window_query.get_single().unwrap();
-
-//     commands.spawn((
-//         SpriteBundle {
-//             transform: Transform::from_xyz(
-//                 window.width() / 2.0,
-//                 window.height() / 2.0,
-//                 0.0,
-//             ),
-//             texture: asset_server.load("sprites/base.png"),
-//             ..default()
-//         },
-//         BaseBlock {},
-//     )).with_children(|parent| {
-//         parent.spawn((
-//             SpriteBundle {
-//                 transform: Transform::from_xyz(
-//                     0.0,
-//                     0.0,
-//                     0.0,
-//                 ),
-//                 texture: asset_server.load("sprites/grappler.png"),
-//                 ..default()
-//             },
-//             Grappler {},
-//         ));
-//     });
-// }
-
-// pub fn player_movement(
-//     keyboard_input: Res<Input<KeyCode>>,
-//     mut player_query: Query<&mut Transform, With<BaseBlock>>,
-//     time: Res<Time>,
-// ) {
-//     if let Ok(mut player_transform) = player_query.get_single_mut() {
-//         if keyboard_input.pressed(KeyCode::W) {
-//             player_transform.translation.y += PLAYER_SPEED * time.delta_seconds();
-//         }
-//         if keyboard_input.pressed(KeyCode::A) {
-//             player_transform.translation.x -= PLAYER_SPEED * time.delta_seconds();
-//         }
-//         if keyboard_input.pressed(KeyCode::S) {
-//             player_transform.translation.y -= PLAYER_SPEED * time.delta_seconds();
-//         }
-//         if keyboard_input.pressed(KeyCode::D) {
-//             player_transform.translation.x += PLAYER_SPEED * time.delta_seconds();
-//         }
-//     }
-// }
 
 // pub fn grappler_logic(
 //     mut grappler_query: Query<(&mut Transform, &GlobalTransform), With<Grappler>>,

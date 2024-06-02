@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use distributions::{Distribution, Standard};
+use rand::*;
 use super::{ traits::*, core::Core, turret::Turret, harvester::Harvester};
 
 #[derive(Component)]
@@ -56,3 +58,23 @@ impl Rotate for Blocks {
         }
     }
 }
+
+impl Blocks {
+    pub fn get_random_block() -> Blocks {
+        match thread_rng().gen_range(0..=1) {
+            0 => Self::Turret(Turret::default()),
+            1 => Self::Harvester(Harvester::default()),
+            _ => Self::Core(Core::default()),
+        }
+    }
+}
+
+// impl Distribution<Blocks> for Standard {
+//     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Blocks {
+//         match rng.gen_range(0..=2) {
+//             0 => {}
+//         }
+//     }
+// }
+
+

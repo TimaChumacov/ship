@@ -7,7 +7,10 @@ pub struct Harvester {
 }
 
 #[derive(Component)]
-pub struct Grappler {}
+pub struct Grappler {
+    pub is_looting: bool,
+    pub grabbed_loot: bool,
+}
 
 impl Default for Harvester {
     fn default() -> Self {
@@ -36,11 +39,14 @@ impl Spawn for Harvester {
             parent.spawn((
                 SpriteBundle {
                     transform: Transform::from_xyz(0.0, 0.0, 1.0)
-                                         .with_rotation(Quat::from_rotation_z(self.rotation.to_radians())),
+                                         .with_rotation(Quat::from_rotation_z(-self.rotation.to_radians())),
                     texture: asset_server.load("sprites/grappler.png"),
                     ..default()
                 },
-                Grappler {}
+                Grappler {
+                    is_looting: false,
+                    grabbed_loot: false,
+                }
             ));
         });
     }

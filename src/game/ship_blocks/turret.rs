@@ -9,7 +9,7 @@ pub struct Turret {
 impl Default for Turret {
     fn default() -> Self {
         Turret {
-            rotation: 90.0,
+            rotation: 0.0,
         }
     }
 }
@@ -24,7 +24,7 @@ impl Spawn for Turret {
         parent.spawn((
             SpriteBundle {
                 transform: Transform::from_translation(spawn_pos)
-                                     .with_rotation(Quat::from_rotation_z(self.rotation.to_radians())),
+                                     .with_rotation(Quat::from_rotation_z(-self.rotation.to_radians())),
                 texture: asset_server.load("sprites/turret.png"),
                 ..default()
             },

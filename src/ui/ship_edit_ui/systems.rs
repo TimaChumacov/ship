@@ -65,6 +65,7 @@ pub fn interact_with_ui_loot(
         match *interaction {
             Interaction::Pressed => {
                 player_loot.select_loot(small_ui_block.index, &mut commands, selected_loot_ui, &asset_server);
+                //player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, &asset_server);
                 *border_color = Color::PURPLE.into();
             },
             Interaction::Hovered => {

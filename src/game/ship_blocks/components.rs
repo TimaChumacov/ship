@@ -68,13 +68,3 @@ impl Blocks {
         }
     }
 }
-
-// impl Distribution<Blocks> for Standard {
-//     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Blocks {
-//         match rng.gen_range(0..=2) {
-//             0 => {}
-//         }
-//     }
-// }
-
-

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use super::turret::{Turret, Bullet, TurretTimer};
-use super::harvester::{self, Grappler, Harvester};
+use super::harvester::{Wire, Grappler, Harvester};
 use crate::game::ship_blocks::components::Blocks;
 use crate::game::player::components::PlayerLoot;
 use crate::game::{components::{Destructible, Loot}, enemies::components::Enemy};
@@ -59,42 +59,55 @@ pub fn harvester_logic(
     time: Res<Time>,
     mut player_loot: ResMut<PlayerLoot>,
     harvester_query: Query<(&Harvester, &Children)>,
-    mut grappler_query: Query<(&GlobalTransform, &mut Transform, &mut Grappler)>,
-    mut loot_query: Query<(&mut Transform, Entity), (With<Loot>, Without<Grappler>)>
+    mut grappler_query: Query<(&GlobalTransform, &mut Transform, &mut Grappler, &Children)>,
+    mut wire_query: Query<&mut Transform, (With<Wire>, Without<Grappler>, Without<Loot>)>,
+    mut loot_query: Query<(&mut Transform, Entity, &mut Loot), Without<Grappler>>
 ) {
-    for (mut loot_transform, loot_entity) in loot_query.iter_mut() {
+    for (mut loot_transform, loot_entity, mut loot) in loot_query.iter_mut() {
         for (harvester, children) in harvester_query.iter() {
-            for child in children.iter() {
-                let (grappler_glob_transform, mut grappler_transform, mut grappler) = grappler_query.get_mut(*child).unwrap();
-                let distance_to_loot = loot_transform.translation.distance(grappler_glob_transform.translation());
-                if distance_to_loot < 80.0 {
-                    if !grappler.is_looting {
-                        grappler.is_looting = true;
-                    } else {
-                        if !grappler.grabbed_loot {
-                            let dir = (loot_transform.translation - grappler_glob_transform.translation()).normalize();
-                            grappler_transform.translation += dir * time.delta_seconds() * 80.0;
-                            grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir);
-                            if distance_to_loot < 20.0 {
-                                grappler.grabbed_loot = true;
-                            }
-                        } else {
-                            let dir = -grappler_transform.translation.normalize();
-                            grappler_transform.translation += dir * time.delta_seconds() * 40.0;
-                            grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, -dir);
-                            loot_transform.translation = grappler_glob_transform.translation();
-                            loot_transform.rotation = grappler_transform.rotation;
-                            if grappler_transform.translation.length() < 5.0 {
-                                commands.entity(loot_entity).despawn();
-                                player_loot.put_block_in_loot(&Blocks::get_random_block());
-                                grappler.is_looting = false;
-                                grappler.grabbed_loot = false;
-                                grappler_transform.translation = Vec3::ZERO;
-                                grappler_transform.rotation = Quat::from_rotation_z(harvester.rotation.to_radians());
-                            }
+            let child = children.first().unwrap();
+            let (grappler_glob_transform, mut grappler_transform, mut grappler, grappler_children) = grappler_query.get_mut(*child).unwrap();
+            let wire_entity = grappler_children.first().unwrap();
+            let mut wire_transform = wire_query.get_mut(*wire_entity).unwrap();
+            let distance_to_loot = loot_transform.translation.distance(grappler_glob_transform.translation());
+            if grappler.target.is_none() && !loot.is_targeted && distance_to_loot < 80.0 {
+                grappler.target = Some(loot_entity);
+                loot.is_targeted = true;
+            } else if grappler.target.is_some() && grappler.target.unwrap() == loot_entity {
+                if !grappler.is_returning {
+                    let dir = (loot_transform.translation - grappler_glob_transform.translation()).normalize();
+                    grappler_transform.translation += dir * time.delta_seconds() * 80.0;
+                    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir);
+                    if distance_to_loot < 20.0 {
+                        grappler.grabbed_loot = true;
+                        grappler.is_returning = true;
+                    } else if grappler_transform.translation.length() > 80.0 {
+                        loot.is_targeted = false;
+                        grappler.is_returning = true;
+                    }
+                } else {
+                    let dir = -grappler_transform.translation.normalize();
+                    grappler_transform.translation += dir * time.delta_seconds() * 40.0;
+                    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, -dir);
+                    if grappler.grabbed_loot {
+                        loot_transform.translation = grappler_glob_transform.translation();
+                        loot_transform.rotation = grappler_transform.rotation;
+                    }
+                    if grappler_transform.translation.length() < 5.0 {
+                        if grappler.grabbed_loot {
+                            commands.entity(loot_entity).despawn();
                         }
+                        player_loot.put_block_in_loot(&Blocks::get_random_block());
+                        grappler.target = None;
+                        grappler.is_returning = false;
+                        grappler.grabbed_loot = false;
+                        grappler_transform.translation = Vec2::ZERO.extend(1.0);
+                        grappler_transform.rotation = Quat::from_rotation_z(harvester.rotation.to_radians());
                     }
                 }
+                let wire_length = grappler_transform.translation.xy().length();
+                wire_transform.translation.y = -wire_length / 2.0;
+                wire_transform.scale.y = wire_length / 32.0;
             }
         }
     }

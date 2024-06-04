@@ -6,4 +6,6 @@ pub struct Destructible {
 }
 
 #[derive(Component)]
-pub struct Loot {}
+pub struct Loot {
+    pub is_targeted: bool,
+}

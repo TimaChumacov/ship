@@ -18,7 +18,9 @@ pub fn update_destructibles(
                         texture: asset_server.load("sprites/loot.png"),
                         ..default()
                     },
-                    Loot {}
+                    Loot {
+                        is_targeted: false,
+                    }
                 ));
             }
         }

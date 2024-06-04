@@ -8,9 +8,13 @@ pub struct Harvester {
 
 #[derive(Component)]
 pub struct Grappler {
-    pub is_looting: bool,
+    pub target: Option<Entity>,
+    pub is_returning: bool,
     pub grabbed_loot: bool,
 }
+
+#[derive(Component)]
+pub struct Wire {}
 
 impl Default for Harvester {
     fn default() -> Self {
@@ -44,10 +48,30 @@ impl Spawn for Harvester {
                     ..default()
                 },
                 Grappler {
-                    is_looting: false,
+                    target: None,
+                    is_returning: false,
                     grabbed_loot: false,
                 }
-            ));
+            ))
+            .with_children(|parent| {
+                parent.spawn((
+                    SpriteBundle {
+                        transform: Transform::from_xyz(0.0, 0.0, 1.0),
+                        texture: asset_server.load("sprites/grappler_wire.png"),
+                        ..default()
+                    },
+                    Wire {}
+                ));
+            })
+            ;
+            // parent.spawn((
+            //     SpriteBundle {
+            //         transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            //         texture: asset_server.load("sprites/grappler_wire.png"),
+            //         ..default()
+            //     },
+            //     Wire {}
+            // ));
         });
     }
 

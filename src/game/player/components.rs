@@ -51,10 +51,7 @@ impl PlayerLoot {
         asset_server: &Res<AssetServer>
     ) {
         self.selected_loot_index = Some(target_index);
-        let selected_loot_ui_entity = selected_loot_ui.single();
-        commands.entity(selected_loot_ui_entity).with_children(|parent| {
-            self.looted_blocks[target_index].spawn_ui(parent, asset_server);
-        });
+        self.redraw_selected_loot(commands, selected_loot_ui, asset_server);
     }
 
     pub fn deselect_loot(

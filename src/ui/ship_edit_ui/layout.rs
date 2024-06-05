@@ -14,16 +14,17 @@ pub fn show_or_hide_ui(
     mut ship_layout: ResMut<ShipLayout>,
     asset_server: Res<AssetServer>,
     player_query: Query<Entity, With<Player>>,
-    player_loot: Res<PlayerLoot>,
+    mut player_loot: ResMut<PlayerLoot>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         match state.get() {
             PauseState::Running => {
                 next_state.set(PauseState::Paused);
-                spawn_ui(commands, ship_layout.into(), asset_server, player_loot)
+                spawn_ui(commands, ship_layout.into(), asset_server, player_loot.into())
             }
             PauseState::Paused => {
                 next_state.set(PauseState::Running);
+                player_loot.selected_loot_index = None;
                 let ui_entity = ui_query.single();
                 commands.entity(ui_entity).despawn_recursive();
                 if !ship_layout.old_blocks_empty() {

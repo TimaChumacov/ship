@@ -1,33 +1,34 @@
 use bevy::prelude::*;
 use super::turret::{Turret, Bullet, TurretTimer};
 use super::harvester::{Wire, Grappler, Harvester};
+use crate::game::player;
 use crate::game::ship_blocks::components::Blocks;
-use crate::game::player::components::PlayerLoot;
+use crate::game::player::components::{Player, PlayerLoot};
 use crate::game::{components::{Destructible, Loot}, enemies::components::Enemy};
 
 pub fn turret_logic(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    player_query: Query<&Transform, With<Player>>,
     turret_query: Query<(&GlobalTransform, &Transform, &Turret)>,
     mut turret_timer: ResMut<TurretTimer>,
     time: Res<Time>
 ) {
     turret_timer.timer.tick(time.delta());
     if turret_timer.timer.finished() {
+        let player_transform = player_query.single();
         for (turret_glob_transform, turret_transform, turret) in turret_query.iter() {
+            //println!("{} + {} = {}", turret_transform.rotation.w.to_degrees(), player_transform.rotation.w.to_degrees(), (turret_transform.rotation + player_transform.rotation).w.to_degrees());
             commands.spawn((
                 SpriteBundle {
                     transform: Transform::from_translation(
-                        turret_glob_transform.translation() + turret_transform.local_y() * 16.0
-                    ).with_rotation(turret_transform.rotation),
+                        turret_glob_transform.translation()
+                    ).with_rotation(Quat::from_rotation_z((turret.rotation + Player::get_rotation(player_transform)).to_radians())),
+                    visibility: Visibility::Hidden,
                     texture: asset_server.load("sprites/bullet.png"),
                     ..default()
                 },
-                Bullet {
-                    speed: 150.0,
-                    damage: 1,
-                    lifetime: 1.0,
-                }
+                Bullet::default(),
             ));
         }
     }
@@ -35,11 +36,17 @@ pub fn turret_logic(
 
 pub fn bullet_logic(
     mut commands: Commands,
-    mut bullet_query: Query<(&mut Transform, &mut Bullet, Entity)>,
+    mut bullet_query: Query<(&mut Transform, &mut Visibility, &mut Bullet, Entity)>,
     mut enemy_query: Query<(&Transform, &mut Destructible), (With<Enemy>, Without<Bullet>)>,
     time: Res<Time>
 ) {
-    for (mut bullet_transform, mut bullet_stats, bullet_entity) in bullet_query.iter_mut() {
+    for (mut bullet_transform, mut bullet_visibility, mut bullet_stats, bullet_entity) in bullet_query.iter_mut() {
+        if !bullet_stats.is_offseted {
+            let offset = bullet_transform.local_y() * 16.0;
+            bullet_transform.translation += offset;
+            *bullet_visibility = Visibility::Visible;
+            bullet_stats.is_offseted = true;
+        }
         let movement = bullet_transform.local_y() * bullet_stats.speed * time.delta_seconds();
         bullet_transform.translation += movement;
         bullet_stats.lifetime -= time.delta_seconds();
@@ -65,19 +72,30 @@ pub fn harvester_logic(
 ) {
     for (mut loot_transform, loot_entity, mut loot) in loot_query.iter_mut() {
         for (harvester, children) in harvester_query.iter() {
+            // Harvester is the parent of Grappler who is the parent of Wire. I get all of their entities first
             let child = children.first().unwrap();
             let (grappler_glob_transform, mut grappler_transform, mut grappler, grappler_children) = grappler_query.get_mut(*child).unwrap();
             let wire_entity = grappler_children.first().unwrap();
             let mut wire_transform = wire_query.get_mut(*wire_entity).unwrap();
+
+            println!("{}", grappler_glob_transform.translation());
+
             let distance_to_loot = loot_transform.translation.distance(grappler_glob_transform.translation());
+
+            // new grappler will be assigned to loot only if: it doesn't already transport loot; the loot isn't targeted by other Grappler; loot is within set distance;
             if grappler.target.is_none() && !loot.is_targeted && distance_to_loot < 80.0 {
+                //assigns new target for grappler
                 grappler.target = Some(loot_entity);
                 loot.is_targeted = true;
+
+            // grappler animation logic
             } else if grappler.target.is_some() && grappler.target.unwrap() == loot_entity {
+                // logic for grappler flying to the loot
                 if !grappler.is_returning {
                     let dir = (loot_transform.translation - grappler_glob_transform.translation()).normalize();
                     grappler_transform.translation += dir * time.delta_seconds() * 80.0;
-                    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir);
+                    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, grappler_transform.translation.normalize());
+                    // if loot is close it's grabbed, if too far the grappler returns empty
                     if distance_to_loot < 20.0 {
                         grappler.grabbed_loot = true;
                         grappler.is_returning = true;
@@ -85,14 +103,17 @@ pub fn harvester_logic(
                         loot.is_targeted = false;
                         grappler.is_returning = true;
                     }
+                // logic for grappler flying back
                 } else {
                     let dir = -grappler_transform.translation.normalize();
                     grappler_transform.translation += dir * time.delta_seconds() * 40.0;
-                    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, -dir);
+                    grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, grappler_transform.translation.normalize());
+                    // logic if flying back with loot
                     if grappler.grabbed_loot {
                         loot_transform.translation = grappler_glob_transform.translation();
                         loot_transform.rotation = grappler_transform.rotation;
                     }
+                    // resetting everything once grappler returns
                     if grappler_transform.translation.length() < 5.0 {
                         if grappler.grabbed_loot {
                             commands.entity(loot_entity).despawn();
@@ -105,6 +126,7 @@ pub fn harvester_logic(
                         grappler_transform.rotation = Quat::from_rotation_z(harvester.rotation.to_radians());
                     }
                 }
+                // wire logic that is always relevant
                 let wire_length = grappler_transform.translation.xy().length();
                 wire_transform.translation.y = -wire_length / 2.0;
                 wire_transform.scale.y = wire_length / 32.0;

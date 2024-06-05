@@ -64,6 +64,18 @@ pub struct Bullet {
     pub speed: f32,
     pub damage: i8,
     pub lifetime: f32,
+    pub is_offseted: bool,
+}
+
+impl Default for Bullet {
+    fn default() -> Self {
+        Bullet {
+            speed: 150.0,
+            damage: 1,
+            lifetime: 1.0,
+            is_offseted: false,
+        }
+    }
 }
 
 #[derive(Resource)]

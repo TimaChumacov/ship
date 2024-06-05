@@ -13,6 +13,12 @@ pub const PLAYER_SPEED: f32 = 100.0;
 #[derive(Component)]
 pub struct Player {}
 
+impl Player {
+    pub fn get_rotation(transform: &Transform) -> f32 {
+        transform.rotation.to_euler(EulerRot::ZXY).0.to_degrees()
+    }
+}
+
 #[derive(Resource)]
 pub struct PlayerLoot {
     pub looted_blocks: Vec<Blocks>,

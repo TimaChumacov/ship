@@ -45,5 +45,12 @@ pub fn player_movement(
         if keyboard_input.pressed(KeyCode::KeyD) {
             player_transform.translation.x += PLAYER_SPEED * time.delta_seconds();
         }
+        if keyboard_input.pressed(KeyCode::KeyE) {
+            player_transform.rotate_z(-time.delta_seconds());
+            let a = player_transform.rotation.to_euler(EulerRot::XYZ);
+        }
+        if keyboard_input.pressed(KeyCode::KeyQ) {
+            player_transform.rotate_z(time.delta_seconds());
+        }
     }
 }

@@ -56,7 +56,7 @@ impl Spawn for Harvester {
             .with_children(|parent| {
                 parent.spawn((
                     SpriteBundle {
-                        transform: Transform::from_xyz(0.0, 0.0, 1.0),
+                        transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::new(1.0, 0.0, 1.0)),
                         texture: asset_server.load("sprites/grappler_wire.png"),
                         ..default()
                     },

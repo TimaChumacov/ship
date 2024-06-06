@@ -1,5 +1,3 @@
-use std::default;
-
 use bevy::prelude::*;
 use crate::game::ship_blocks::core::Core;
 use crate::game::ship_blocks::harvester::Harvester;
@@ -133,9 +131,6 @@ impl PlayerLoot {
         self.looted_blocks.push(target_block.clone());
     }
 }
-
-#[derive(Component)]
-pub struct Ship {}
 
 #[derive(Resource)]
 pub struct ShipLayout {

@@ -29,7 +29,9 @@ impl Spawn for Turret {
                 ..default()
             },
             Block {},
-            Turret::default(),
+            Turret {
+                rotation: self.rotation,
+            },
         ));
     }
 

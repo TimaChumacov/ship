@@ -28,7 +28,7 @@ pub fn show_or_hide_ui(
                 let ui_entity = ui_query.single();
                 commands.entity(ui_entity).despawn_recursive();
                 if !ship_layout.old_blocks_empty() {
-                    ship_layout.update_ship(commands, &player_query, &asset_server)
+                    ship_layout.reset_ship(&mut commands, &player_query, &asset_server)
                 }
             }    
         }

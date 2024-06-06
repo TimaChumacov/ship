@@ -1,7 +1,6 @@
-use bevy::{input::keyboard::KeyboardInput, prelude::*};
+use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use super::components::*;
-use crate::game::ship_blocks::{components::Blocks, core::Core, harvester::Harvester, turret::Turret};
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -47,7 +46,6 @@ pub fn player_movement(
         }
         if keyboard_input.pressed(KeyCode::KeyE) {
             player_transform.rotate_z(-time.delta_seconds());
-            let a = player_transform.rotation.to_euler(EulerRot::XYZ);
         }
         if keyboard_input.pressed(KeyCode::KeyQ) {
             player_transform.rotate_z(time.delta_seconds());

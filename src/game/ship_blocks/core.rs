@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use crate::game::{Collider, Destructible};
+
 use super::{components::Block, traits::Spawn};
 
 #[derive(Component, Clone, PartialEq)]
@@ -25,6 +27,11 @@ impl Spawn for Core {
             },
             Block {},
             Core::default(),
+            Destructible {
+                hp: 10,
+                time_spent_red: 0.0,
+            },
+            Collider::default()
         )).with_children(|parent| {
             parent.spawn(
                 SpriteBundle {

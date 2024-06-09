@@ -15,6 +15,6 @@ pub struct EnemySpawnTimer {
 
 impl Default for EnemySpawnTimer {
     fn default() -> Self {
-        EnemySpawnTimer { timer: Timer::from_seconds(3.0, TimerMode::Repeating) }
+        EnemySpawnTimer { timer: Timer::from_seconds(0.8, TimerMode::Repeating) }
     }
 }

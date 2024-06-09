@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::game::components::Destructible;
+use crate::game::{components::Destructible, Collider};
 use super::components::{Enemy, ChaseBehavior};
 
 #[derive(Component)]
@@ -18,11 +18,13 @@ impl Enemy1 {
             },
             Enemy {},
             Destructible {
-                hp: 1,
+                hp: 9,
+                time_spent_red: 0.0,
             },
             ChaseBehavior {
                 speed: 40.0,
-            }
+            },
+            Collider::default()
         ));
     }
 }

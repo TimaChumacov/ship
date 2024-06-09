@@ -2,7 +2,10 @@ use bevy::prelude::*;
 use crate::general::states::PauseState;
 
 pub mod components;
+use components::*;
+
 mod systems;
+use systems::*;
 
 pub mod player;
 use player::PlayerPlugin;
@@ -13,7 +16,6 @@ use ship_blocks::ShipBlocksPlugin;
 pub mod enemies;
 use enemies::EnemySpawnerPlugin;
 
-use self::systems::update_destructibles;
 
 pub struct GamePlugin;
 
@@ -23,8 +25,13 @@ impl Plugin for GamePlugin {
             PlayerPlugin, 
             EnemySpawnerPlugin, 
             ShipBlocksPlugin
-        )
-    )
-        .add_systems(Update, (update_destructibles).run_if(in_state(PauseState::Running)));
+        ))
+        .add_event::<DamagedEvent>()
+        .add_systems(Update, (
+            update_destructibles,
+            trigger_animation,
+            damaged_animation,
+            collision_logic
+        ).run_if(in_state(PauseState::Running)));
     }
 }

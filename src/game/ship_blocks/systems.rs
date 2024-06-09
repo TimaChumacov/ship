@@ -3,7 +3,7 @@ use super::turret::{Turret, Bullet, TurretTimer};
 use super::harvester::{Wire, Grappler, Harvester};
 use crate::game::ship_blocks::components::Blocks;
 use crate::game::player::components::{Player, PlayerLoot};
-use crate::game::{components::{Destructible, Loot}, enemies::components::Enemy};
+use crate::game::{components::*, enemies::components::Enemy};
 
 pub fn turret_logic(
     mut commands: Commands,
@@ -35,7 +35,8 @@ pub fn turret_logic(
 pub fn bullet_logic(
     mut commands: Commands,
     mut bullet_query: Query<(&mut Transform, &mut Visibility, &mut Bullet, Entity)>,
-    mut enemy_query: Query<(&Transform, &mut Destructible), (With<Enemy>, Without<Bullet>)>,
+    mut enemy_query: Query<(&Transform, Entity, &mut Destructible), (With<Enemy>, Without<Bullet>)>,
+    mut ev_damaged: EventWriter<DamagedEvent>,
     time: Res<Time>
 ) {
     for (mut bullet_transform, mut bullet_visibility, mut bullet_stats, bullet_entity) in bullet_query.iter_mut() {
@@ -51,9 +52,10 @@ pub fn bullet_logic(
         if bullet_stats.lifetime <= 0.0 {
             commands.entity(bullet_entity).despawn();
         }
-        for (enemy_transform, mut enemy_destructible) in enemy_query.iter_mut() {
+        for (enemy_transform, enemy_entity, mut enemy_destructible) in enemy_query.iter_mut() {
             if bullet_transform.translation.distance(enemy_transform.translation) < 17.0 {
-                enemy_destructible.hp -= bullet_stats.damage;
+                enemy_destructible.damage(1, enemy_entity, &mut ev_damaged);
+                commands.entity(bullet_entity).despawn();
             }
         }
     }

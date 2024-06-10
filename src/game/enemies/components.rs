@@ -8,6 +8,13 @@ pub struct ChaseBehavior {
     pub speed: f32,
 }
 
+#[derive(Component)]
+pub struct Melee {
+    pub damage: i8,
+    pub attack_cooldown: f32,
+    pub cooldown_left: f32,
+}
+
 #[derive(Resource)]
 pub struct EnemySpawnTimer {
     pub timer: Timer,

@@ -3,6 +3,15 @@ use bevy::prelude::*;
 #[derive(Event)]
 pub struct DamagedEvent(pub Entity);
 
+#[derive(Event)]
+pub struct CollisionEvent(pub Entity, pub Entity);
+
+#[derive(Event)]
+pub struct EnemyDeathEvent(pub Entity);
+
+#[derive(Event)]
+pub struct BlockDestructionEvent(pub Entity);
+
 #[derive(Component)]
 pub struct Destructible {
     pub hp: i8,
@@ -20,6 +29,7 @@ impl Destructible {
 pub enum CollisionResponse {
     Moves,
     Stays,
+    Trigger
 }
 
 #[derive(Component)]

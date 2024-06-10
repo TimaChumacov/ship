@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use crate::game::{Collider, Destructible};
+
 use super::{components::Block, traits::*};
 
 #[derive(Component, Clone, PartialEq)]
@@ -17,21 +19,33 @@ impl Default for Turret {
 impl Spawn for Turret {
     fn spawn(
         &self,
-        spawn_pos: Vec3,
+        x: usize,
+        y: usize,
         parent: &mut ChildBuilder,
         asset_server: &Res<AssetServer>,
     ) {
         parent.spawn((
             SpriteBundle {
-                transform: Transform::from_translation(spawn_pos)
+                transform: Transform::from_translation(Block::location_by_index(x, y))
                                      .with_rotation(Quat::from_rotation_z(-self.rotation.to_radians())),
                 texture: asset_server.load("sprites/turret.png"),
                 ..default()
             },
-            Block {},
+            Block {
+                x: x,
+                y: y,
+            },
             Turret {
                 rotation: self.rotation,
             },
+            Destructible {
+                hp: 3,
+                time_spent_red: 0.0,
+            },
+            Collider {
+                collision_response: crate::game::CollisionResponse::Stays,
+                ..default()
+            }
         ));
     }
 

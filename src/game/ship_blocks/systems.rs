@@ -1,9 +1,24 @@
 use bevy::prelude::*;
+use super::components::Block;
 use super::turret::{Turret, Bullet, TurretTimer};
 use super::harvester::{Wire, Grappler, Harvester};
 use crate::game::ship_blocks::components::Blocks;
-use crate::game::player::components::{Player, PlayerLoot};
+use crate::game::player::components::{Player, PlayerLoot, ShipLayout};
 use crate::game::{components::*, enemies::components::Enemy};
+
+pub fn block_destruction(
+    mut commands: Commands,
+    mut ship_layout: ResMut<ShipLayout>,
+    block_query: Query<(&Block, Entity)>,
+    mut block_destruction_ev: EventReader<BlockDestructionEvent>
+) {
+    for ev in block_destruction_ev.read() {
+        if let Ok((block, block_entity)) = block_query.get(ev.0) {
+            ship_layout.blocks[block.x][block.y] = None;
+            commands.entity(block_entity).despawn_recursive();
+        }
+    }
+}
 
 pub fn turret_logic(
     mut commands: Commands,

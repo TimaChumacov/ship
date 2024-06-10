@@ -27,11 +27,15 @@ impl Plugin for GamePlugin {
             ShipBlocksPlugin
         ))
         .add_event::<DamagedEvent>()
+        .add_event::<CollisionEvent>()
+        .add_event::<EnemyDeathEvent>()
+        .add_event::<BlockDestructionEvent>()
         .add_systems(Update, (
             update_destructibles,
             trigger_animation,
             damaged_animation,
-            collision_logic
+            collision_detection,
+            collision_physics_logic
         ).run_if(in_state(PauseState::Running)));
     }
 }

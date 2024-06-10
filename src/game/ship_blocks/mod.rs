@@ -23,6 +23,7 @@ impl Plugin for ShipBlocksPlugin {
             bullet_logic, 
             harvester_logic,
             grappler_logic,
+            block_destruction
         ).run_if(in_state(PauseState::Running)));
     }
 }

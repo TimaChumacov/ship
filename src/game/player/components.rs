@@ -160,9 +160,9 @@ impl ShipLayout {
         for (a_usize, x) in self.blocks.iter().enumerate() {
             for (b_usize, y) in x.iter().enumerate() {
                 if let Some(y) = y {
-                    let (a, b) = (a_usize as f32, b_usize as f32);
                     y.spawn(
-                        Vec3::new(a * 32.0 - 64.0, b * -32.0 + 64.0, 0.0), 
+                        a_usize,
+                        b_usize, 
                         parent, 
                         asset_server
                     );
@@ -204,10 +204,10 @@ impl ShipLayout {
                 if y != &self.old_blocks[a_usize][b_usize] {
                     if self.old_blocks[a_usize][b_usize].is_none() {
                         if let Some(y) = y {
-                            let (a, b) = (a_usize as f32, b_usize as f32);
                             commands.entity(player_entity).with_children(|parent| {
                                 y.spawn(
-                                    Vec3::new(a * 32.0 - 64.0, b * -32.0 + 64.0, 0.0),
+                                    a_usize,
+                                    b_usize,
                                     parent, 
                                     asset_server
                                 );

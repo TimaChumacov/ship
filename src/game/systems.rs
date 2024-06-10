@@ -1,27 +1,20 @@
 use bevy::prelude::*;
-use super::components::*;
+use super::{components::*, ship_blocks::components::Block};
 use crate::game::enemies::components::Enemy;
 
 pub fn update_destructibles(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    destructibles: Query<(Entity, &Destructible, &Transform, Option<&Enemy>)>
+    destructibles: Query<(Entity, &Destructible, Option<&Enemy>, Option<&Block>)>,
+    mut enemy_death_ev: EventWriter<EnemyDeathEvent>,
+    mut block_destruction_ev: EventWriter<BlockDestructionEvent>
 ) {
-    for (destruct_entity, destruct_stats, enemy_transform, enemy) in destructibles.iter() {
+    for (destruct_entity, destruct_stats, enemy, block) in destructibles.iter() {
         if destruct_stats.hp <= 0 {
-            commands.entity(destruct_entity).despawn();
-
             if enemy.is_some() {
-                commands.spawn((
-                    SpriteBundle {
-                        transform: Transform::from_translation(enemy_transform.translation),
-                        texture: asset_server.load("sprites/loot.png"),
-                        ..default()
-                    },
-                    Loot {
-                        is_targeted: false,
-                    }
-                ));
+                enemy_death_ev.send(EnemyDeathEvent(destruct_entity));
+            }
+            if block.is_some() {
+                block_destruction_ev.send(BlockDestructionEvent(destruct_entity));
             }
         }
     }
@@ -53,19 +46,42 @@ pub fn damaged_animation(
     }
 }
 
-pub fn collision_logic(
-    mut collider_query: Query<(&mut Transform, &Collider)>,
-    time: Res<Time>
+pub fn collision_detection(
+    mut collider_query: Query<(&GlobalTransform, Entity, &Collider)>,
+    mut collision_ev: EventWriter<CollisionEvent>,
 ) {
     let mut combinations = collider_query.iter_combinations_mut();
-    while let Some([(mut transform_1, collider_1), (mut transform_2, collider_2)]) = combinations.fetch_next() {
-        if transform_1.translation.distance(transform_2.translation) < collider_1.radius + collider_2.radius {
+    while let Some([(glob_transform_1, entity_1, collider_1), 
+                    (glob_transform_2, entity_2, collider_2)]) = combinations.fetch_next() {
+        if glob_transform_1.translation().distance(glob_transform_2.translation()) < collider_1.radius + collider_2.radius {
+            collision_ev.send(CollisionEvent(entity_1, entity_2));
+        }
+    }
+}
+
+pub fn collision_physics_logic(
+    mut collider_query: Query<(&mut Transform, &GlobalTransform, &Collider)>,
+    mut collision_ev: EventReader<CollisionEvent>,
+    time: Res<Time>
+) {
+    for ev in collision_ev.read() {
+        if let Ok(
+            [(mut transform_1, glob_transform_1, collider_1),
+            (mut transform_2, glob_transform_2, collider_2)] 
+        ) = collider_query.get_many_mut([ev.0, ev.1]) {
             if collider_1.collision_response == CollisionResponse::Moves && collider_2.collision_response == CollisionResponse::Moves {
                 let dir_away = (transform_1.translation - transform_2.translation).normalize();
                 transform_1.translation += dir_away * 100.0 * time.delta_seconds();
                 transform_2.translation -= dir_away * 100.0 * time.delta_seconds();
+            } else 
+            if collider_1.collision_response == CollisionResponse::Stays {
+                let dir_away = (glob_transform_1.translation() - transform_2.translation).normalize();
+                transform_2.translation -= dir_away * 100.0 * time.delta_seconds();
+            } else
+            if collider_2.collision_response == CollisionResponse::Stays {
+                let dir_away = (transform_1.translation - glob_transform_2.translation()).normalize();
+                transform_1.translation += dir_away * 100.0 * time.delta_seconds();
             }
         }
     }
-    
 }

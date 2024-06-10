@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use crate::game::{Collider, Destructible};
+
 use super::{components::Block, traits::*};
 
 #[derive(Component, Clone, PartialEq)]
@@ -80,18 +82,30 @@ impl Harvester {
 impl Spawn for Harvester {
     fn spawn(
         &self,
-        spawn_pos: Vec3,
+        x: usize,
+        y: usize,
         parent: &mut ChildBuilder,
         asset_server: &Res<AssetServer>,
     ) {
         parent.spawn((
             SpriteBundle {
-                transform: Transform::from_translation(spawn_pos),
+                transform: Transform::from_translation(Block::location_by_index(x, y)),
                 texture: asset_server.load("sprites/base.png"),
                 ..default()
             },
-            Block {},
+            Block {
+                x: x,
+                y: y,
+            },
             Harvester::default(),
+            Destructible {
+                hp: 3,
+                time_spent_red: 0.0,
+            },
+            Collider {
+                collision_response: crate::game::CollisionResponse::Stays,
+                ..default()
+            }
         )).with_children(|parent| {
             self.spawn_child_grappler(parent, asset_server);
         });

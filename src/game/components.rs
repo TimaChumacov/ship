@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::Rng;
 
 #[derive(Event)]
 pub struct DamagedEvent(pub Entity);
@@ -50,4 +51,18 @@ impl Default for Collider {
 #[derive(Component)]
 pub struct Loot {
     pub is_targeted: bool,
+    pub speed_mult: f32,
+    pub dir: Vec3,
+}
+
+impl Default for Loot {
+    fn default() -> Self {
+        let mut rng = rand::thread_rng();
+        let dir = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        Loot {
+            is_targeted: false,
+            speed_mult: 3.0,
+            dir: dir
+        }
+    }
 }

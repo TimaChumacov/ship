@@ -3,7 +3,6 @@ use super::{components::*, ship_blocks::components::Block};
 use crate::game::enemies::components::Enemy;
 
 pub fn update_destructibles(
-    mut commands: Commands,
     destructibles: Query<(Entity, &Destructible, Option<&Enemy>, Option<&Block>)>,
     mut enemy_death_ev: EventWriter<EnemyDeathEvent>,
     mut block_destruction_ev: EventWriter<BlockDestructionEvent>
@@ -16,6 +15,19 @@ pub fn update_destructibles(
             if block.is_some() {
                 block_destruction_ev.send(BlockDestructionEvent(destruct_entity));
             }
+        }
+    }
+}
+
+pub fn animate_loot(
+    mut loot_query: Query<(&mut Transform, &mut Loot)>,
+    time: Res<Time>
+) {
+    for (mut loot_transform, mut loot) in loot_query.iter_mut() {
+        loot_transform.translation += loot.dir * 2.0 * loot.speed_mult * time.delta_seconds();
+        loot_transform.rotate_z(loot.speed_mult * time.delta_seconds());
+        if loot.speed_mult > 0.0 {
+            loot.speed_mult -= time.delta_seconds();
         }
     }
 }
@@ -74,13 +86,15 @@ pub fn collision_physics_logic(
                 transform_1.translation += dir_away * 100.0 * time.delta_seconds();
                 transform_2.translation -= dir_away * 100.0 * time.delta_seconds();
             } else 
-            if collider_1.collision_response == CollisionResponse::Stays {
-                let dir_away = (glob_transform_1.translation() - transform_2.translation).normalize();
-                transform_2.translation -= dir_away * 100.0 * time.delta_seconds();
+            if collider_1.collision_response == CollisionResponse::Stays && collider_2.collision_response == CollisionResponse::Moves {
+                let dir_away = (glob_transform_1.translation() - transform_2.translation);
+                let how_close = (collider_1.radius + collider_2.radius) - dir_away.length();
+                transform_2.translation -= dir_away.normalize() * how_close * time.delta_seconds();
             } else
-            if collider_2.collision_response == CollisionResponse::Stays {
-                let dir_away = (transform_1.translation - glob_transform_2.translation()).normalize();
-                transform_1.translation += dir_away * 100.0 * time.delta_seconds();
+            if collider_2.collision_response == CollisionResponse::Stays && collider_1.collision_response == CollisionResponse::Moves {
+                let dir_away = (transform_1.translation - glob_transform_2.translation());
+                let how_close = (collider_1.radius + collider_2.radius) - dir_away.length();
+                transform_1.translation += dir_away.normalize() * how_close * time.delta_seconds();
             }
         }
     }

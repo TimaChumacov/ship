@@ -92,9 +92,7 @@ pub fn enemy_death(
                     texture: asset_server.load("sprites/loot.png"),
                     ..default()
                 },
-                Loot {
-                    is_targeted: false,
-                }
+                Loot::default()
             ));
 
             commands.entity(enemy_entity).despawn_recursive();

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use crate::game::player::{self, components::Player};
 
-use super::components::{Camera, ZOOM};
+use super::components::{Background, Camera, ZOOM};
 
 pub fn spawn_background(
     mut commands: Commands,
@@ -10,17 +10,33 @@ pub fn spawn_background(
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window = window_query.get_single().unwrap();
-    commands.spawn(
+    let spawn_point = Vec3::new(
+        window.width() / 2.0,
+        window.height() / 2.0,
+        -10.0,
+    );
+    commands.spawn((
         SpriteBundle {
-            transform: Transform::from_xyz(
-                window.width() / 2.0,
-                window.height() / 2.0,
-                0.0,
-            ).with_scale(Vec3::new(1.0, 1.0, 0.0)),
+            transform: Transform::from_translation(spawn_point).with_scale(Vec3::new(1.0, 1.0, 0.0)),
             texture: asset_server.load("sprites/background.png"),
             ..default()
+        },
+        Background {
+            anchor_point: spawn_point
         }
-    );
+    ));
+}
+
+pub fn background_follow(
+    mut background_query: Query<(&mut Transform, &Background)>,
+    player_query: Query<&Transform, (With<Player>, Without<Background>)>,
+    time: Res<Time>,
+) {
+    let (mut background_transform, background) = background_query.single_mut();
+    background_transform.rotate_local_z(time.delta_seconds() / 250.0);
+    if let Ok(player_transform) = player_query.get_single() {
+        background_transform.translation = ((player_transform.translation - background.anchor_point) * 0.95) + background.anchor_point;
+    }
 }
 
 pub fn spawn_camera(

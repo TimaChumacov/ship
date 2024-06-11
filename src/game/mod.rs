@@ -32,6 +32,7 @@ impl Plugin for GamePlugin {
         .add_event::<BlockDestructionEvent>()
         .add_systems(Update, (
             update_destructibles,
+            animate_loot,
             trigger_animation,
             damaged_animation,
             collision_detection,

@@ -43,12 +43,12 @@ pub fn turret_logic(
                 },
                 Bullet::default(),
             ));
-            commands.spawn(
-                AudioBundle {
-                    source: asset_server.load("audio/click.mp3"),
-                    settings: PlaybackSettings::REMOVE,
-                }
-            );
+            // commands.spawn(
+            //     AudioBundle {
+            //         source: asset_server.load("audio/click.mp3"),
+            //         settings: PlaybackSettings::REMOVE,
+            //     }
+            // );
         }
     }
 }

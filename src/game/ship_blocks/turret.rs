@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::game::{Collider, Destructible};
+use crate::{game::{Collider, Destructible}, general::components::SceneElement};
 
 use super::{components::Block, traits::*};
 
@@ -31,6 +31,7 @@ impl Spawn for Turret {
                 texture: asset_server.load("sprites/turret.png"),
                 ..default()
             },
+            SceneElement {},
             Block {
                 x: x,
                 y: y,
@@ -40,6 +41,7 @@ impl Spawn for Turret {
             },
             Destructible {
                 hp: 3,
+                max_hp: 3,
                 time_spent_red: 0.0,
             },
             Collider {
@@ -73,6 +75,8 @@ impl Rotate for Turret {
         self.rotation += 90.0
     }
 }
+
+impl Description for Turret {}
 
 // --- Projectiles gonna have own space later ---
 #[derive(Component)]

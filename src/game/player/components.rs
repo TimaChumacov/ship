@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use crate::game::ship_blocks::core::Core;
 use crate::game::ship_blocks::harvester::Harvester;
 use crate::game::ship_blocks::turret::Turret;
-use crate::ui::ship_edit_ui::components::{LootMenu, SelectedLootUi};
+use crate::ui::ship_edit_ui::components::{LootMenu, SelectedLootDescription, SelectedLootIcon};
 use crate::game::ship_blocks::{components::Blocks, traits::Spawn};
 use crate::ui::ship_edit_ui::{styles::*, components::LootUiBlock};
 
@@ -51,27 +51,33 @@ impl PlayerLoot {
         &mut self, 
         target_index: usize,
         commands: &mut Commands,
-        selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+        selected_loot_icon: Query<Entity, With<SelectedLootIcon>>,
+        selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
         asset_server: &Res<AssetServer>
     ) {
         self.selected_loot_index = Some(target_index);
-        self.redraw_selected_loot(commands, selected_loot_ui, asset_server);
+        self.redraw_selected_loot(commands, selected_loot_icon, selected_loot_text, asset_server);
     }
 
     pub fn deselect_loot(
         &mut self, 
         commands: &mut Commands,
-        selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+        selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
+        mut selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
     ) {
         self.selected_loot_index = None;
         let selected_loot_ui_entity = selected_loot_ui.single();
         commands.entity(selected_loot_ui_entity).despawn_descendants();
+        let mut selected_loot_text = selected_loot_text.single_mut();
+        selected_loot_text.sections[0].value = format!("deselected");
+        selected_loot_text.sections[1].value = format!("deselected");
     }
 
     pub fn redraw_selected_loot(
         &self,
         commands: &mut Commands,
-        selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+        selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
+        mut selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
         asset_server: &Res<AssetServer>
     ) {
         let selected_loot_ui_entity = selected_loot_ui.single();
@@ -79,15 +85,19 @@ impl PlayerLoot {
         commands.entity(selected_loot_ui_entity).with_children(|parent| {
             self.get_selected_loot().unwrap().spawn_ui(parent, asset_server)
         });
+        let mut selected_loot_text = selected_loot_text.single_mut();
+        selected_loot_text.sections[0].value = format!("block selected");
+        selected_loot_text.sections[1].value = format!("block selected");
     }
 
     pub fn remove_used_loot(
         &mut self,
         commands: &mut Commands,
-        selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+        selected_loot_icon: Query<Entity, With<SelectedLootIcon>>,
+        selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
     ) {
         self.looted_blocks.remove(self.selected_loot_index.unwrap());
-        self.deselect_loot(commands, selected_loot_ui);
+        self.deselect_loot(commands, selected_loot_icon, selected_loot_text);
     }
 
     pub fn redraw_loot_ui(
@@ -224,5 +234,21 @@ impl ShipLayout {
 
     pub fn old_blocks_empty(&self) -> bool {
         self.old_blocks == vec![vec![None]]
+    }
+
+    pub fn is_core_placed(&self) -> bool{
+        let mut result = false;
+        for x in self.blocks.iter() {
+            for y in x.iter() {
+                if let Some(block) = y {
+                    match *block {
+                        Blocks::Core(_) => {result = true},
+                        _ => {}
+                    }
+                }
+            }
+        }
+
+        result
     }
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use crate::game::{Collider, Destructible};
+use crate::{game::{Collider, Destructible}, general::components::SceneElement};
 
-use super::{components::Block, traits::Spawn};
+use super::{components::Block, traits::{Description, Spawn}};
 
 #[derive(Component, Clone, PartialEq)]
 pub struct Core {}
@@ -26,6 +26,7 @@ impl Spawn for Core {
                 texture: asset_server.load("sprites/base.png"),
                 ..default()
             },
+            SceneElement {},
             Block {
                 x: x,
                 y: y,
@@ -33,6 +34,7 @@ impl Spawn for Core {
             Core::default(),
             Destructible {
                 hp: 10,
+                max_hp: 10,
                 time_spent_red: 0.0,
             },
             Collider {
@@ -63,3 +65,5 @@ impl Spawn for Core {
         );
     }
 }
+
+impl Description for Core {}

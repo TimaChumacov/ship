@@ -21,7 +21,10 @@ pub struct LootUiBlock {
 }
 
 #[derive(Component)]
-pub struct SelectedLootUi {}
+pub struct SelectedLootIcon {}
+
+#[derive(Component)]
+pub struct SelectedLootDescription {}
 
 #[derive(Component)]
 pub struct DeselectButton {}

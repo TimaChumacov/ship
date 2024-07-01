@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::general::states::PauseState;
+use crate::general::states::{AppState, PauseState};
 
 pub mod components;
 use components::*;
@@ -37,6 +37,7 @@ impl Plugin for GamePlugin {
             damaged_animation,
             collision_detection,
             collision_physics_logic
-        ).run_if(in_state(PauseState::Running)));
+        ).run_if(in_state(PauseState::Running)))
+        .add_systems(OnExit(AppState::Game), destroy_scene);
     }
 }

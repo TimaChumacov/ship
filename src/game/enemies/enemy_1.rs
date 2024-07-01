@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::game::{components::Destructible, Collider};
+use crate::{game::{components::Destructible, Collider}, general::components::SceneElement};
 use super::components::{ChaseBehavior, Enemy, Melee};
 
 #[derive(Component)]
@@ -17,9 +17,11 @@ impl Enemy1 {
                 texture: asset_server.load("sprites/enemy.png"),
                 ..default()
             },
+            SceneElement {},
             Enemy {},
             Destructible {
                 hp: 3,
+                max_hp: 3,
                 time_spent_red: 0.0,
             },
             ChaseBehavior {

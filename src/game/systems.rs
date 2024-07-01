@@ -1,6 +1,6 @@
-use bevy::prelude::*;
-use super::{components::*, ship_blocks::components::Block};
-use crate::game::enemies::components::Enemy;
+use bevy::{prelude::*, transform::commands};
+use super::{components::*, player::components::{PlayerLoot, ShipLayout}, ship_blocks::components::Block};
+use crate::{game::enemies::components::Enemy, general::components::SceneElement};
 
 pub fn update_destructibles(
     destructibles: Query<(Entity, &Destructible, Option<&Enemy>, Option<&Block>)>,
@@ -98,4 +98,15 @@ pub fn collision_physics_logic(
             }
         }
     }
+}
+
+pub fn destroy_scene(
+    mut commands: Commands,
+    scene_element_query: Query<Entity, With<SceneElement>>
+) {
+    for element_entity in scene_element_query.iter() {
+        commands.entity(element_entity).despawn();
+    }
+    commands.insert_resource(ShipLayout::default());
+    commands.insert_resource(PlayerLoot::default());
 }

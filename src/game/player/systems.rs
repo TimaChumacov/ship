@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use crate::general::components::SceneElement;
+
 use super::components::*;
 
 pub fn spawn_player(
@@ -20,6 +22,7 @@ pub fn spawn_player(
             texture: asset_server.load("sprites/grid.png"),
             ..default()
         }, 
+        SceneElement {},
         Player {}
     )).with_children(|parent|{
         ship_layout.spawn_ship(parent, &asset_server);

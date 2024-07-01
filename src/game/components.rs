@@ -16,6 +16,7 @@ pub struct BlockDestructionEvent(pub Entity);
 #[derive(Component)]
 pub struct Destructible {
     pub hp: i8,
+    pub max_hp: i8,
     pub time_spent_red: f32,
 }
 

@@ -1,4 +1,3 @@
-use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 use crate::game::player::components::{PlayerLoot, ShipLayout};
 use crate::game::ship_blocks::traits::{Rotate, Spawn};
@@ -9,11 +8,12 @@ pub fn interact_with_ui_blocks(
     asset_server: Res<AssetServer>,
     mut ship_layout: ResMut<ShipLayout>,
     mut player_loot: ResMut<PlayerLoot>,
-    selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+    selected_loot_icon: Query<Entity, With<SelectedLootIcon>>,
+    selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
     loot_menu_query: Query<Entity, With<LootMenu>>,
     mut button_query: Query<
-    (&Interaction, &mut BorderColor, &UiBlock, Entity),
-    Changed<Interaction>
+        (&Interaction, &mut BorderColor, &UiBlock, Entity),
+        Changed<Interaction>
     >,
 ) {
     if let Ok((interaction, mut border_color, ui_block, block_entity)) = button_query.get_single_mut() {
@@ -31,7 +31,7 @@ pub fn interact_with_ui_blocks(
                         commands.entity(block_entity).with_children(|parent| {
                             selected_block.spawn_ui(parent, &asset_server)
                         });
-                        player_loot.remove_used_loot(&mut commands, selected_loot_ui);
+                        player_loot.remove_used_loot(&mut commands, selected_loot_icon, selected_loot_text);
                         player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server);
                     }
                 } else {
@@ -58,13 +58,14 @@ pub fn interact_with_ui_loot(
     Changed<Interaction>
     >,
     mut commands: Commands,
-    selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+    selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
+    selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
     asset_server: Res<AssetServer>
 ) {
     if let Ok((interaction, mut border_color, small_ui_block)) = button_query.get_single_mut() {
         match *interaction {
             Interaction::Pressed => {
-                player_loot.select_loot(small_ui_block.index, &mut commands, selected_loot_ui, &asset_server);
+                player_loot.select_loot(small_ui_block.index, &mut commands, selected_loot_ui, selected_loot_text, &asset_server);
                 //player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, &asset_server);
                 *border_color = Color::PURPLE.into();
             },
@@ -81,7 +82,8 @@ pub fn interact_with_ui_loot(
 pub fn deselect_button(
     mut commands: Commands,
     mut player_loot: ResMut<PlayerLoot>,
-    selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+    selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
+    selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
     mut button_query: Query<
     (&Interaction, &mut BorderColor),
     (Changed<Interaction>, With<DeselectButton>)
@@ -90,7 +92,7 @@ pub fn deselect_button(
     if let Ok((interaction, mut border_color)) = button_query.get_single_mut() {
         match *interaction {
             Interaction::Pressed => {
-                player_loot.deselect_loot(&mut commands, selected_loot_ui);
+                player_loot.deselect_loot(&mut commands, selected_loot_ui, selected_loot_text);
                 *border_color = Color::PURPLE.into();
             },
             Interaction::Hovered => {
@@ -107,14 +109,15 @@ pub fn rotate_loot(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_loot: ResMut<PlayerLoot>,
     mut commands: Commands,
-    selected_loot_ui: Query<Entity, With<SelectedLootUi>>,
+    selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
+    selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
     asset_server: Res<AssetServer>
 ) {
     if keyboard_input.just_pressed(KeyCode::KeyR) {
         // "if" here because the player can press R without selecting anything
         if let Some(selected_loot) = player_loot.get_selected_loot_mut() {
             selected_loot.rotate_90_right();
-            player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, &asset_server);
+            player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, selected_loot_text, &asset_server);
         }
     }
 }

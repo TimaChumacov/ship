@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::game::player::{self, components::Player};
+use crate::game::player::components::Player;
 
-use super::components::{Background, Camera, ZOOM};
+use super::components::{Background, Camera, SceneElement, ZOOM};
 
 pub fn spawn_background(
     mut commands: Commands,
@@ -21,6 +21,7 @@ pub fn spawn_background(
             texture: asset_server.load("sprites/background.png"),
             ..default()
         },
+        SceneElement {},
         Background {
             anchor_point: spawn_point
         }
@@ -32,10 +33,11 @@ pub fn background_follow(
     player_query: Query<&Transform, (With<Player>, Without<Background>)>,
     time: Res<Time>,
 ) {
-    let (mut background_transform, background) = background_query.single_mut();
-    background_transform.rotate_local_z(time.delta_seconds() / 250.0);
-    if let Ok(player_transform) = player_query.get_single() {
-        background_transform.translation = ((player_transform.translation - background.anchor_point) * 0.95) + background.anchor_point;
+    if let Ok((mut background_transform, background)) = background_query.get_single_mut() {
+        background_transform.rotate_local_z(time.delta_seconds() / 250.0);
+        if let Ok(player_transform) = player_query.get_single() {
+            background_transform.translation = ((player_transform.translation - background.anchor_point) * 0.95) + background.anchor_point;
+        }
     }
 }
 
@@ -71,6 +73,8 @@ pub fn follow_player(
         camera_transform.translation = player_transform.translation;
     }
 }
+
+// Code below makes a custom cursor for the game. I don't need it for now, but I'm saving it for later
 
 // pub fn spawn_crosshair(
 //     mut commands: Commands,

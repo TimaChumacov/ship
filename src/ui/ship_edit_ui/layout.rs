@@ -11,7 +11,7 @@ pub fn show_or_hide_ui(
     state: Res<State<PauseState>>,
     mut next_state: ResMut<NextState<PauseState>>,
     ui_query: Query<Entity, With<ShipEditMenu>>,
-    mut ship_layout: ResMut<ShipLayout>,
+    ship_layout: ResMut<ShipLayout>,
     asset_server: Res<AssetServer>,
     player_query: Query<Entity, With<Player>>,
     mut player_loot: ResMut<PlayerLoot>,
@@ -23,12 +23,14 @@ pub fn show_or_hide_ui(
                 spawn_ui(commands, ship_layout.into(), asset_server, player_loot.into())
             }
             PauseState::Paused => {
-                next_state.set(PauseState::Running);
-                player_loot.selected_loot_index = None;
-                let ui_entity = ui_query.single();
-                commands.entity(ui_entity).despawn_recursive();
-                if !ship_layout.old_blocks_empty() {
-                    ship_layout.reset_ship(&mut commands, &player_query, &asset_server)
+                if ship_layout.is_core_placed() {
+                    next_state.set(PauseState::Running);
+                    player_loot.selected_loot_index = None;
+                    let ui_entity = ui_query.single();
+                    commands.entity(ui_entity).despawn_recursive();
+                    if !ship_layout.old_blocks_empty() {
+                        ship_layout.reset_ship(&mut commands, &player_query, &asset_server)
+                    }
                 }
             }    
         }
@@ -74,7 +76,7 @@ fn spawn_ui(
                     background_color: BLOCK_COLOR.into(),
                     ..default()
                 },
-                SelectedLootUi {}
+                SelectedLootIcon {}
             ));
             // --- Button: deselect selected block ---
             parent.spawn((
@@ -96,15 +98,19 @@ fn spawn_ui(
                 );
             });
             // --- Text: Block description ---
-            parent.spawn(
+            parent.spawn((
                 TextBundle {
                     text: Text {
-                        sections: vec![TextSection::new("", text())],
+                        sections: vec![
+                            TextSection::new("1 \n", text()),
+                            TextSection::new("2", text())
+                        ],
                         ..default()
                     },
                     ..default()
-                }
-            );
+                },
+                SelectedLootDescription {}
+            ));
         });
         // --- grid edit menu ---
         parent.spawn(

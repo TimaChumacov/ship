@@ -9,3 +9,6 @@ pub struct Camera {}
 pub struct Background {
     pub anchor_point: Vec3
 }
+
+#[derive(Component)]
+pub struct SceneElement {}

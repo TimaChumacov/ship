@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::Rng;
 use crate::game::player::components::Player;
@@ -19,12 +20,13 @@ pub fn spawn_enemies(
     enemy_spawn_timer.timer.tick(time.delta());
 
     let window = window_query.get_single().unwrap();
-    let player_transform = player_query.single();
-    let mut rng = rand::thread_rng();
-    let dir_away = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0).normalize();
-    let spawn_pos = player_transform.translation + dir_away * window.width() / 2.0;
-    if enemy_spawn_timer.timer.finished() {
-        Enemy1::spawn(spawn_pos, commands, asset_server);
+    if let Ok(player_transform) = player_query.get_single() {
+        let mut rng = rand::thread_rng();
+        let dir_away = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0).normalize();
+        let spawn_pos = player_transform.translation + dir_away * window.width() / 2.0;
+        if enemy_spawn_timer.timer.finished() {
+            Enemy1::spawn(spawn_pos, commands, asset_server);
+        }
     }
 }
 
@@ -41,9 +43,11 @@ pub fn enemy_movement(
                 closest_target = Some(block_glob_transform.translation());
             }
         }
-        let dir = (closest_target.unwrap() - enemy_transform.translation).normalize();
-        enemy_transform.translation += dir * enemy_chase.speed * time.delta_seconds();
-        enemy_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir);
+        if let Some(closest_target) = closest_target {
+            let dir = (closest_target - enemy_transform.translation).normalize();
+            enemy_transform.translation += dir * enemy_chase.speed * time.delta_seconds();
+            enemy_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir);
+        }
     }
 }
 
@@ -52,7 +56,9 @@ pub fn enemy_collides_block(
     mut block_query: Query<&mut Destructible, With<Block>>,
     mut collision_ev: EventReader<CollisionEvent>,
     mut damaged_ev: EventWriter<DamagedEvent>,
-    time: Res<Time>
+    time: Res<Time>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>
 ) {
     for ev in collision_ev.read() {
         if let Ok(mut enemy_melee) = enemy_query.get_mut(ev.0) {
@@ -68,6 +74,7 @@ pub fn enemy_collides_block(
         if let Ok(mut enemy_melee) = enemy_query.get_mut(ev.1) {
             if let Ok(mut block_destr) = block_query.get_mut(ev.0) {
                 if enemy_melee.cooldown_left <= 0.0 {
+                    audio.play(asset_server.load("audio/block_damaged.ogg"));
                     block_destr.damage(enemy_melee.damage, ev.0, &mut damaged_ev);
                     enemy_melee.cooldown_left = enemy_melee.attack_cooldown;
                 } else {
@@ -82,10 +89,12 @@ pub fn enemy_death(
     mut commands: Commands,
     enemy_query: Query<(&Transform, Entity), With<Enemy>>,
     mut enemy_death_ev: EventReader<EnemyDeathEvent>,
-    asset_server: Res<AssetServer>
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>
 ) {
     for ev in enemy_death_ev.read() {
         if let Ok((enemy_transform, enemy_entity)) = enemy_query.get(ev.0) {
+            audio.play(asset_server.load("audio/enemy_death.ogg")).with_volume(0.5);
             commands.spawn((
                 SpriteBundle {
                     transform: Transform::from_translation(enemy_transform.translation),
@@ -94,7 +103,6 @@ pub fn enemy_death(
                 },
                 Loot::default()
             ));
-
             commands.entity(enemy_entity).despawn_recursive();
         }
     }

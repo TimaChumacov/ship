@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::game::{Collider, Destructible};
+use crate::{game::{Collider, Destructible}, general::components::SceneElement};
 
 use super::{components::Block, traits::*};
 
@@ -93,6 +93,7 @@ impl Spawn for Harvester {
                 texture: asset_server.load("sprites/base.png"),
                 ..default()
             },
+            SceneElement {},
             Block {
                 x: x,
                 y: y,
@@ -100,6 +101,7 @@ impl Spawn for Harvester {
             Harvester::default(),
             Destructible {
                 hp: 3,
+                max_hp: 3,
                 time_spent_red: 0.0,
             },
             Collider {
@@ -135,3 +137,5 @@ impl Rotate for Harvester {
         self.rotation += 90.0
     }
 }
+
+impl Description for Harvester {}

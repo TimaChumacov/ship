@@ -26,6 +26,7 @@ impl Plugin for GamePlugin {
             EnemySpawnerPlugin, 
             ShipBlocksPlugin
         ))
+        .init_resource::<DifficultyScaling>()
         .add_event::<DamagedEvent>()
         .add_event::<CollisionEvent>()
         .add_event::<EnemyDeathEvent>()
@@ -36,7 +37,8 @@ impl Plugin for GamePlugin {
             trigger_animation,
             damaged_animation,
             collision_detection,
-            collision_physics_logic
+            collision_physics_logic,
+            update_difficulty
         ).run_if(in_state(PauseState::Running)))
         .add_systems(OnExit(AppState::Game), destroy_scene);
     }

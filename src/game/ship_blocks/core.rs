@@ -66,4 +66,12 @@ impl Spawn for Core {
     }
 }
 
-impl Description for Core {}
+impl Description for Core {
+    fn get_info(&self) -> String {
+        format!("This is the core of the ship. It has 10 max hp and when it's destroyed, you lose. The ship always has to have a core somewhere, you can't remove it but you can move it around.")
+    }
+
+    fn get_title(&self) -> String {
+        format!("Core")
+    }
+}

@@ -10,6 +10,7 @@ pub fn interact_with_ui_blocks(
     mut player_loot: ResMut<PlayerLoot>,
     selected_loot_icon: Query<Entity, With<SelectedLootIcon>>,
     selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
+    selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     loot_menu_query: Query<Entity, With<LootMenu>>,
     mut button_query: Query<
         (&Interaction, &mut BorderColor, &UiBlock, Entity),
@@ -31,7 +32,7 @@ pub fn interact_with_ui_blocks(
                         commands.entity(block_entity).with_children(|parent| {
                             selected_block.spawn_ui(parent, &asset_server)
                         });
-                        player_loot.remove_used_loot(&mut commands, selected_loot_icon, selected_loot_text);
+                        player_loot.remove_used_loot(&mut commands, selected_loot_icon, selected_loot_text, selected_loot_title);
                         player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server);
                     }
                 } else {
@@ -60,12 +61,13 @@ pub fn interact_with_ui_loot(
     mut commands: Commands,
     selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
     selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
+    selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     asset_server: Res<AssetServer>
 ) {
     if let Ok((interaction, mut border_color, small_ui_block)) = button_query.get_single_mut() {
         match *interaction {
             Interaction::Pressed => {
-                player_loot.select_loot(small_ui_block.index, &mut commands, selected_loot_ui, selected_loot_text, &asset_server);
+                player_loot.select_loot(small_ui_block.index, &mut commands, selected_loot_ui, selected_loot_text, selected_loot_title, &asset_server);
                 //player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, &asset_server);
                 *border_color = Color::PURPLE.into();
             },
@@ -84,6 +86,7 @@ pub fn deselect_button(
     mut player_loot: ResMut<PlayerLoot>,
     selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
     selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
+    selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     mut button_query: Query<
     (&Interaction, &mut BorderColor),
     (Changed<Interaction>, With<DeselectButton>)
@@ -92,7 +95,7 @@ pub fn deselect_button(
     if let Ok((interaction, mut border_color)) = button_query.get_single_mut() {
         match *interaction {
             Interaction::Pressed => {
-                player_loot.deselect_loot(&mut commands, selected_loot_ui, selected_loot_text);
+                player_loot.deselect_loot(&mut commands, selected_loot_ui, selected_loot_text, selected_loot_title);
                 *border_color = Color::PURPLE.into();
             },
             Interaction::Hovered => {
@@ -111,13 +114,14 @@ pub fn rotate_loot(
     mut commands: Commands,
     selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
     selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
+    selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     asset_server: Res<AssetServer>
 ) {
     if keyboard_input.just_pressed(KeyCode::KeyR) {
         // "if" here because the player can press R without selecting anything
         if let Some(selected_loot) = player_loot.get_selected_loot_mut() {
             selected_loot.rotate_90_right();
-            player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, selected_loot_text, &asset_server);
+            player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, selected_loot_text, selected_loot_title, &asset_server);
         }
     }
 }

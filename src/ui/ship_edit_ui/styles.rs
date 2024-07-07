@@ -43,6 +43,7 @@ pub fn info_menu() -> Style {
     let mut style = loot_menu();
     style.flex_direction = FlexDirection::Column;
     style.align_items = AlignItems::Center;
+    style.align_content = AlignContent::Center;
 
     style
 }
@@ -78,6 +79,14 @@ pub fn text() -> TextStyle{
     TextStyle {
         font_size: 20.0,
         color: Color::BLACK,
+        ..default()
+    }
+}
+
+pub fn stats_text() -> TextStyle{
+    TextStyle {
+        font_size: 25.0,
+        color: Color::RED,
         ..default()
     }
 }

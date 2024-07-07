@@ -15,7 +15,7 @@ pub fn block_destruction(
     mut next_state: ResMut<NextState<AppState>>,
     mut ship_layout: ResMut<ShipLayout>,
     block_query: Query<(&Block, Entity, Option<&Core>)>,
-    mut block_destruction_ev: EventReader<BlockDestructionEvent>
+    mut block_destruction_ev: EventReader<BlockDestructionEvent>,
 ) {
     for ev in block_destruction_ev.read() {
         if let Ok((block, block_entity, core)) = block_query.get(ev.0) {

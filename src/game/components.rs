@@ -67,3 +67,44 @@ impl Default for Loot {
         }
     }
 }
+
+#[derive(Resource)]
+pub struct DifficultyScaling {
+    pub time_played: f32, // in seconds
+    pub start_enemy_spawnrate: f32, // how many seconds it takes for an enemy to spawn
+    pub start_loot_droprate: f32, // the chance for an enemy to drop loot
+    pub max_scale_time: f32, // time mark, after which difficulty doesn't change
+    pub max_enemy_spawnrate: f32, // max spawnrate at max difficulty
+    pub max_loot_droprate: f32, // max spawnrate at max difficulty
+}
+
+impl Default for DifficultyScaling {
+    fn default() -> Self {
+        DifficultyScaling {
+            time_played: 0.0,
+            start_enemy_spawnrate: 3.5,
+            start_loot_droprate: 50.0,
+            max_scale_time: 180.0,
+            max_enemy_spawnrate: 0.3,
+            max_loot_droprate: 5.0,
+        }
+    }
+}
+
+impl DifficultyScaling {
+    pub fn get_difficulty_modifier(&self) -> f32 {
+        if self.time_played < self.max_scale_time {
+            self.time_played / self.max_scale_time
+        } else {
+            1.0
+        }
+    }
+
+    pub fn get_enemy_spawnrate(&self) -> f32 {
+        self.start_enemy_spawnrate - (self.start_enemy_spawnrate - self.max_enemy_spawnrate) * self.get_difficulty_modifier()
+    }
+
+    pub fn get_loot_droprate(&self) -> f32 {
+        self.start_loot_droprate - (self.start_loot_droprate - self.max_loot_droprate) * self.get_difficulty_modifier()
+    }
+}

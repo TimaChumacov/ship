@@ -1,4 +1,7 @@
 use bevy::prelude::*;
+use crate::game::ship_blocks::traits::get_generic_info;
+use crate::game::ship_blocks::traits::get_generic_stats;
+use crate::game::ship_blocks::traits::get_generic_title;
 use crate::general::states::PauseState;
 use super::components::*;
 use super::styles::*;
@@ -60,15 +63,16 @@ fn spawn_ui(
             }
         ).with_children(|parent| {
             // --- Title: Block Name ---
-            parent.spawn(
+            parent.spawn((
                 TextBundle {
                     text: Text {
-                        sections: vec![TextSection::new("Title", title())],
+                        sections: vec![TextSection::new(get_generic_title(), title())],
                         ..default()
                     },
                     ..default()
-                }
-            );
+                },
+                SelectedLootTitle {}
+            ));
             // --- Image: Block Sprite ---
             parent.spawn((
                 NodeBundle {
@@ -102,8 +106,8 @@ fn spawn_ui(
                 TextBundle {
                     text: Text {
                         sections: vec![
-                            TextSection::new("1 \n", text()),
-                            TextSection::new("2", text())
+                            TextSection::new(get_generic_stats(), stats_text()),
+                            TextSection::new(get_generic_info(), text())
                         ],
                         ..default()
                     },
@@ -122,7 +126,7 @@ fn spawn_ui(
         ).with_children(|parent| {
             for (a_usize, x) in ship_layout.blocks.iter().enumerate() {
                 for (b_usize, y) in x.iter().enumerate() {
-                    let (a , b) = (a_usize as f32, b_usize as f32);
+                    //let (a , b) = (a_usize as f32, b_usize as f32);
                     parent.spawn((
                         ButtonBundle {
                             style: block(),

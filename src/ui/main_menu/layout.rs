@@ -23,8 +23,16 @@ pub fn spawn_ui(
                 background_color: MENU_COLOR.into(),
                 ..default()
             },
-        // play button
         )).with_children(|parent| {
+            // Guide
+            parent.spawn(TextBundle {
+                text: Text {
+                    sections: vec![TextSection::new("This a prototype of a top-down swarm survival game. You play as ship that consists of different parts that have their own functionality. Move with [W A S D] and rotate your ship with [Q] and [E], it's VERY important to rotate. By pressing [Esc] you enter the ship editing menu, where you can customize your ship. Enemies sometimes drop ship parts on death. Collect the droped loot by coming close to it. If the the Core of the ship is destroyed, you die. (Background and SFX are not mine)", button_text())],
+                    ..default()
+                },
+                ..default()
+            });
+            // play button
             parent.spawn((
                 ButtonBundle {
                     style: button(),

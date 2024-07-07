@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use rand::*;
-use super::{ traits::*, core::Core, turret::Turret, harvester::Harvester};
+use super::{ core::Core, harvester::Harvester, traits::*, turret::Turret};
 
 #[derive(Component)]
 pub struct Block {
@@ -70,6 +70,32 @@ impl Rotate for Blocks {
             Self::Core(_core) => {},
             Self::Turret(turret) => turret.rotate_90_right(),
             Self::Harvester(harvester) => harvester.rotate_90_right(),
+        }
+    }
+}
+
+impl Description for Blocks {
+    fn get_info(&self) -> String {
+        match self {
+            Self::Core(core) => {core.get_info()},
+            Self::Turret(turret) => {turret.get_info()},
+            Self::Harvester(harvester) => {harvester.get_info()}
+        }
+    }
+
+    fn get_stats(&self) -> String {
+        match self {
+            Self::Core(core) => {core.get_stats()},
+            Self::Turret(turret) => {turret.get_stats()},
+            Self::Harvester(harvester) => {harvester.get_stats()}
+        }
+    }
+
+    fn get_title(&self) -> String {
+        match self {
+            Self::Core(core) => {core.get_title()},
+            Self::Turret(turret) => {turret.get_title()},
+            Self::Harvester(harvester) => {harvester.get_title()}
         }
     }
 }

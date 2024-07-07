@@ -18,7 +18,7 @@ impl Plugin for GeneralPlugin {
             .add_systems( OnEnter(AppState::Game), spawn_background)
             .add_systems(Update, (
                 background_follow,
-                follow_player
+                follow_player,
             ).run_if(in_state(PauseState::Running)));
     }
 }

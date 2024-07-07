@@ -1,4 +1,4 @@
-use bevy::{prelude::*, transform::commands};
+use bevy::prelude::*;
 use super::{components::*, player::components::{PlayerLoot, ShipLayout}, ship_blocks::components::Block};
 use crate::{game::enemies::components::Enemy, general::components::SceneElement};
 
@@ -87,12 +87,12 @@ pub fn collision_physics_logic(
                 transform_2.translation -= dir_away * 100.0 * time.delta_seconds();
             } else 
             if collider_1.collision_response == CollisionResponse::Stays && collider_2.collision_response == CollisionResponse::Moves {
-                let dir_away = (glob_transform_1.translation() - transform_2.translation);
+                let dir_away = glob_transform_1.translation() - transform_2.translation;
                 let how_close = (collider_1.radius + collider_2.radius) - dir_away.length();
                 transform_2.translation -= dir_away.normalize() * how_close * time.delta_seconds();
             } else
             if collider_2.collision_response == CollisionResponse::Stays && collider_1.collision_response == CollisionResponse::Moves {
-                let dir_away = (transform_1.translation - glob_transform_2.translation());
+                let dir_away = transform_1.translation - glob_transform_2.translation();
                 let how_close = (collider_1.radius + collider_2.radius) - dir_away.length();
                 transform_1.translation += dir_away.normalize() * how_close * time.delta_seconds();
             }
@@ -109,4 +109,16 @@ pub fn destroy_scene(
     }
     commands.insert_resource(ShipLayout::default());
     commands.insert_resource(PlayerLoot::default());
+}
+
+pub fn update_difficulty(
+    mut difficulty: ResMut<DifficultyScaling>,
+    time: Res<Time>
+) {
+    difficulty.time_played += time.delta_seconds();
+    println!("time played: {}", difficulty.time_played);
+    println!("diff mod: {}", difficulty.get_difficulty_modifier());
+    println!("enemy spawnrate: {}", difficulty.get_enemy_spawnrate());
+    println!("enemy droprate: {}", difficulty.get_loot_droprate());
+    println!("---------------------")
 }

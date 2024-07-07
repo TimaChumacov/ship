@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::game::components::DifficultyScaling;
+
 #[derive(Component)]
 pub struct Enemy {}
 
@@ -22,6 +24,6 @@ pub struct EnemySpawnTimer {
 
 impl Default for EnemySpawnTimer {
     fn default() -> Self {
-        EnemySpawnTimer { timer: Timer::from_seconds(0.8, TimerMode::Repeating) }
+        EnemySpawnTimer { timer: Timer::from_seconds(DifficultyScaling::default().start_enemy_spawnrate, TimerMode::Repeating) }
     }
 }

@@ -27,4 +27,7 @@ pub struct SelectedLootIcon {}
 pub struct SelectedLootDescription {}
 
 #[derive(Component)]
+pub struct SelectedLootTitle {}
+
+#[derive(Component)]
 pub struct DeselectButton {}

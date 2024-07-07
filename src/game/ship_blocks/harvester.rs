@@ -138,4 +138,12 @@ impl Rotate for Harvester {
     }
 }
 
-impl Description for Harvester {}
+impl Description for Harvester {
+    fn get_info(&self) -> String {
+        format!("Harvesters collect loot around them. The reach is 2 blocks in each direction. You can rotate them with [R], but it doesn't affect anything yet. Harvesters have 3 max hp.")
+    }
+
+    fn get_title(&self) -> String {
+        format!("Harvester")
+    }
+}

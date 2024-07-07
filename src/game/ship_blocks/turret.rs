@@ -76,7 +76,15 @@ impl Rotate for Turret {
     }
 }
 
-impl Description for Turret {}
+impl Description for Turret {
+    fn get_info(&self) -> String {
+        format!("Turrets shoot in the direction they're facing. You can rotate them with [R]. Each bullet deals 1 dmg, while enemies have 3 hp. Turrets have 3 max hp")
+    }
+
+    fn get_title(&self) -> String {
+        format!("Turret")
+    }
+}
 
 // --- Projectiles gonna have own space later ---
 #[derive(Component)]

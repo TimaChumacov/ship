@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -5,6 +7,8 @@ use rand::Rng;
 use crate::game::player::components::Player;
 use crate::game::ship_blocks::components::Block;
 use crate::game::{CollisionEvent, DamagedEvent, Destructible, EnemyDeathEvent, Loot};
+use crate::game::components::DifficultyScaling;
+use crate::general::components::ZOOM;
 
 use super::components::{ChaseBehavior, Enemy, EnemySpawnTimer, Melee};
 use super::enemy_1::*;
@@ -12,6 +16,7 @@ use super::enemy_1::*;
 pub fn spawn_enemies(
     commands: Commands,
     mut enemy_spawn_timer: ResMut<EnemySpawnTimer>,
+    difficulty: Res<DifficultyScaling>,
     time: Res<Time>,
     asset_server: Res<AssetServer>,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -23,9 +28,10 @@ pub fn spawn_enemies(
     if let Ok(player_transform) = player_query.get_single() {
         let mut rng = rand::thread_rng();
         let dir_away = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0).normalize();
-        let spawn_pos = player_transform.translation + dir_away * window.width() / 2.0;
+        let spawn_pos = player_transform.translation + dir_away * window.width() / 2.0 * ZOOM * 1.25;
         if enemy_spawn_timer.timer.finished() {
             Enemy1::spawn(spawn_pos, commands, asset_server);
+            enemy_spawn_timer.timer.set_duration(Duration::from_secs_f32(difficulty.get_enemy_spawnrate()))
         }
     }
 }
@@ -87,6 +93,7 @@ pub fn enemy_collides_block(
 
 pub fn enemy_death(
     mut commands: Commands,
+    difficulty: Res<DifficultyScaling>,
     enemy_query: Query<(&Transform, Entity), With<Enemy>>,
     mut enemy_death_ev: EventReader<EnemyDeathEvent>,
     asset_server: Res<AssetServer>,
@@ -95,6 +102,8 @@ pub fn enemy_death(
     for ev in enemy_death_ev.read() {
         if let Ok((enemy_transform, enemy_entity)) = enemy_query.get(ev.0) {
             audio.play(asset_server.load("audio/enemy_death.ogg")).with_volume(0.5);
+            let loot_drop: f32 = rand::thread_rng().gen();
+            if loot_drop * 100.0 < difficulty.get_loot_droprate() {
             commands.spawn((
                 SpriteBundle {
                     transform: Transform::from_translation(enemy_transform.translation),
@@ -103,6 +112,7 @@ pub fn enemy_death(
                 },
                 Loot::default()
             ));
+            }
             commands.entity(enemy_entity).despawn_recursive();
         }
     }

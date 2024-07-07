@@ -19,8 +19,10 @@ pub fn menu() -> Style {
     Style {
         width: Val::Px(400.0),
         height: Val::Px(600.0),
-        justify_content: JustifyContent::Center,
+        padding: UiRect::all(Val::Px(8.0)),
+        flex_direction: FlexDirection::Column,
         align_items: AlignItems::Center,
+        align_content: AlignContent::Center,
         ..Style::DEFAULT
     }
 }

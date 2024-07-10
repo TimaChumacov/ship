@@ -82,19 +82,21 @@ pub fn collision_physics_logic(
             (mut transform_2, glob_transform_2, collider_2)] 
         ) = collider_query.get_many_mut([ev.0, ev.1]) {
             if collider_1.collision_response == CollisionResponse::Moves && collider_2.collision_response == CollisionResponse::Moves {
-                let dir_away = (transform_1.translation - transform_2.translation).normalize();
-                transform_1.translation += dir_away * 100.0 * time.delta_seconds();
-                transform_2.translation -= dir_away * 100.0 * time.delta_seconds();
+                let dir_away = transform_1.translation - transform_2.translation;
+                // how_close: 0 means colliders baraly touch and 1 means the two objects are in each other
+                let how_close = 1.0 - dir_away.length() / (collider_1.radius + collider_2.radius);
+                transform_1.translation += dir_away.normalize() * how_close * 100.0 * time.delta_seconds();
+                transform_2.translation -= dir_away.normalize() * how_close * 100.0 * time.delta_seconds();
             } else 
             if collider_1.collision_response == CollisionResponse::Stays && collider_2.collision_response == CollisionResponse::Moves {
                 let dir_away = glob_transform_1.translation() - transform_2.translation;
-                let how_close = (collider_1.radius + collider_2.radius) - dir_away.length();
-                transform_2.translation -= dir_away.normalize() * how_close * time.delta_seconds();
+                let how_close = 1.0 - dir_away.length() / (collider_1.radius + collider_2.radius);
+                transform_2.translation -= dir_away.normalize() * how_close * 500.0 * time.delta_seconds();
             } else
             if collider_2.collision_response == CollisionResponse::Stays && collider_1.collision_response == CollisionResponse::Moves {
                 let dir_away = transform_1.translation - glob_transform_2.translation();
-                let how_close = (collider_1.radius + collider_2.radius) - dir_away.length();
-                transform_1.translation += dir_away.normalize() * how_close * time.delta_seconds();
+                let how_close = 1.0 - dir_away.length() / (collider_1.radius + collider_2.radius);
+                transform_1.translation += dir_away.normalize() * how_close * 500.0 * time.delta_seconds();
             }
         }
     }

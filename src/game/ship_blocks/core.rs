@@ -33,8 +33,8 @@ impl Spawn for Core {
             },
             Core::default(),
             Destructible {
-                hp: 10,
-                max_hp: 10,
+                hp: 120,
+                max_hp: 120,
                 time_spent_red: 0.0,
             },
             Collider {

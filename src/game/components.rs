@@ -82,7 +82,7 @@ impl Default for DifficultyScaling {
     fn default() -> Self {
         DifficultyScaling {
             time_played: 0.0,
-            start_enemy_spawnrate: 3.5,
+            start_enemy_spawnrate: 0.4,
             start_loot_droprate: 50.0,
             max_scale_time: 180.0,
             max_enemy_spawnrate: 0.3,

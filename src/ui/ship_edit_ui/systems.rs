@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 use crate::game::player::components::{PlayerLoot, ShipLayout};
 use crate::game::ship_blocks::traits::{Rotate, Spawn};
-use super::components::*;
+use super::styles::selection_frame;
+use super::{components::*, Selection};
 
 pub fn interact_with_ui_blocks(
     mut commands: Commands,
+    mut selection: ResMut<Selection>,
     asset_server: Res<AssetServer>,
     mut ship_layout: ResMut<ShipLayout>,
     mut player_loot: ResMut<PlayerLoot>,
@@ -43,12 +45,37 @@ pub fn interact_with_ui_blocks(
                 player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server)
             },
             Interaction::Hovered => {
+                selection.hovered_block = Some(block_entity);
                 *border_color = Color::RED.into();
             },
             Interaction::None => {
                 *border_color = Color::NONE.into();
             }
         }
+    }
+}
+
+pub fn animate_selection(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    selection: Res<Selection>,
+    grid_query: Query<Entity, With<Gridmenu>>,
+    mut block_hover_frame_query: Query<&mut Style, With<BlockHoverFrame>>,
+) {
+    if let Some(hovered_entity) = selection.hovered_block {
+        if selection.block_hover_frame.is_none() {
+            commands.entity(grid_query.single()).with_children(|parent| {
+                parent.spawn((
+                    ImageBundle {
+                        image: asset_server.load("sprites/hover_frame.png").into(),
+                        style: selection_frame(),
+                        ..default()
+                    },
+                    BlockHoverFrame {}
+                ));
+            });
+        }
+        //let block_hover_frame = block_hover_frame_query.single_mut();
     }
 }
 

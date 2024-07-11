@@ -75,6 +75,15 @@ pub fn unselect_button() -> Style {
     }
 }
 
+pub fn selection_frame() -> Style {
+    Style {
+        width: Val::Px(100.0), 
+        height: Val::Px(100.0),
+        position_type: PositionType::Absolute,
+        ..Style::DEFAULT
+    }
+}
+
 pub fn text() -> TextStyle{
     TextStyle {
         font_size: 20.0,

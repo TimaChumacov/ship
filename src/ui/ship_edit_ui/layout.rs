@@ -117,13 +117,14 @@ fn spawn_ui(
             ));
         });
         // --- grid edit menu ---
-        parent.spawn(
+        parent.spawn((
             NodeBundle {
                 style: grid_menu(),
                 background_color: MAIN_COLOR.into(),
                 ..default()
-            }
-        ).with_children(|parent| {
+            },
+            Gridmenu {}
+        )).with_children(|parent| {
             for (a_usize, x) in ship_layout.blocks.iter().enumerate() {
                 for (b_usize, y) in x.iter().enumerate() {
                     //let (a , b) = (a_usize as f32, b_usize as f32);

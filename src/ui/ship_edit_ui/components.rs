@@ -6,6 +6,8 @@ pub struct ShipEditMenu {}
 #[derive(Component)]
 pub struct LootMenu {}
 
+#[derive(Component)]
+pub struct Gridmenu {}
 
 #[derive(Component)]
 pub struct UiBlock {
@@ -31,3 +33,7 @@ pub struct SelectedLootTitle {}
 
 #[derive(Component)]
 pub struct DeselectButton {}
+
+// Components for Selection stuff
+#[derive(Component)]
+pub struct BlockHoverFrame {}

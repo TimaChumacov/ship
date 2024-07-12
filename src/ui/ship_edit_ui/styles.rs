@@ -53,7 +53,6 @@ pub fn block() -> Style {
     width: Val::Px(100.0), 
     height: Val::Px(100.0),
     margin: UiRect::all(Val::Px(8.0)),
-    border: UiRect::all(Val::Px(3.0)),
     ..Style::DEFAULT
     }
 }
@@ -77,9 +76,11 @@ pub fn unselect_button() -> Style {
 
 pub fn selection_frame() -> Style {
     Style {
-        width: Val::Px(100.0), 
-        height: Val::Px(100.0),
+        width: Val::Px(106.0), 
+        height: Val::Px(106.0),
         position_type: PositionType::Absolute,
+        top: Val::Px(-3.0),
+        left: Val::Px(-3.0),
         ..Style::DEFAULT
     }
 }

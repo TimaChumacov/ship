@@ -64,9 +64,9 @@ impl PlayerLoot {
     pub fn deselect_loot(
         &mut self, 
         commands: &mut Commands,
-        selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
-        mut selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
-        mut selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
+        selected_loot_ui: &Query<Entity, With<SelectedLootIcon>>,
+        selected_loot_text: &mut Query<&mut Text, With<SelectedLootDescription>>,
+        selected_loot_title: &mut Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     ) {
         self.selected_loot_index = None;
         let selected_loot_ui_entity = selected_loot_ui.single();
@@ -101,9 +101,9 @@ impl PlayerLoot {
     pub fn remove_used_loot(
         &mut self,
         commands: &mut Commands,
-        selected_loot_icon: Query<Entity, With<SelectedLootIcon>>,
-        selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
-        selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
+        selected_loot_icon: &Query<Entity, With<SelectedLootIcon>>,
+        selected_loot_text: &mut Query<&mut Text, With<SelectedLootDescription>>,
+        selected_loot_title: &mut Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     ) {
         self.looted_blocks.remove(self.selected_loot_index.unwrap());
         self.deselect_loot(commands, selected_loot_icon, selected_loot_text, selected_loot_title);

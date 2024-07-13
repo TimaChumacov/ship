@@ -122,6 +122,11 @@ impl Spawn for Harvester {
             ImageBundle {
                 transform: Transform::from_rotation(Quat::from_rotation_z(self.rotation.to_radians())),
                 image: asset_server.load("sprites/grappler.png").into(),
+                z_index: ZIndex::Local(2),
+                // style: Style {
+                //     position_type: PositionType::Absolute,
+                //     ..default()
+                // },
                 ..default()
             }
         );

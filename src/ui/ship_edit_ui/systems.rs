@@ -16,11 +16,12 @@ pub fn interact_with_ui_blocks(
     mut selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     loot_menu_query: Query<Entity, With<LootMenu>>,
     mut button_query: Query<
-        (&Interaction, &mut BorderColor, &UiBlock, Entity),
+        (&Interaction, &Children, &UiBlock, Entity),
         Changed<Interaction>
     >,
+    mut frame_query: Query<&mut Visibility, With<BlockHoverFrame>>
 ) {
-    for (interaction, mut border_color, ui_block, block_entity) in button_query.iter_mut() {
+    for (interaction, children, ui_block, block_entity) in button_query.iter_mut() {
         match *interaction {
             Interaction::Pressed => {
                 if ship_layout.old_blocks_empty() {
@@ -45,11 +46,21 @@ pub fn interact_with_ui_blocks(
                 player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server)
             },
             Interaction::Hovered => {
+                for child in children {
+                    if let Ok(mut frame_visibility) = frame_query.get_mut(*child) {
+                        *frame_visibility = Visibility::Visible;
+                    }
+                }
                 //*border_color = Color::RED.into();
                 //selection.new_hovered_block = Some(block_entity);
                 //selection.block_hover_frame = None;
             },
             Interaction::None => {
+                for child in children {
+                    if let Ok(mut frame_visibility) = frame_query.get_mut(*child) {
+                        *frame_visibility = Visibility::Hidden;
+                    }
+                }
                 //*border_color = Color::NONE.into();
                 // if let Some(old_frame) = selection.block_hover_frame {
                 //     selection.block_hover_frame = None;
@@ -68,47 +79,51 @@ pub fn animate_selection(
     grid_query: Query<Entity, With<Gridmenu>>,
     mut block_hover_frame_query: Query<&RelativeCursorPosition, With<BlockHoverFrame>>,
 ) {
-    // if a block is hovered...
-    if let Some(hovered_entity) = selection.new_hovered_block {
-        // and if the hovered block is new... 
-        if selection.currently_hovered_block != selection.new_hovered_block {
-            // delete the old frame if it exists...
-            if selection.block_hover_frame.is_some() {
-                commands.entity(selection.block_hover_frame.unwrap()).despawn();
-            }
-            // spawn a new one..
-            commands.entity(hovered_entity).with_children(|parent| {
-                // store it in a resource...
-                selection.block_hover_frame = Some(
-                    parent.spawn((
-                        ImageBundle {
-                            image: asset_server.load("sprites/hover_frame.png").into(),
-                            style: selection_frame(),
-                            ..default()
-                        },
-                        BlockHoverFrame {}
-                    ))
-                    .insert(RelativeCursorPosition::default())
-                    .id()
-                )
-            });
-            // now the currently hovered block is the one that was new
-            selection.currently_hovered_block = selection.new_hovered_block;
-        }   
-    }
-    if let Ok(cursor_pos) = block_hover_frame_query.get_single_mut() {
-        if let Some(pos) = cursor_pos.normalized {
-            if selection.block_hover_frame.is_some() &&
-                0.0 > pos.y && pos.y > 1.0 &&
-                0.0 > pos.x && pos.x > 1.0
-            {
-                commands.entity(selection.block_hover_frame.unwrap()).despawn();
-                selection.block_hover_frame = None;
-            }
-        }
-         // block_hover_frame_style.top = Val::Px(relative_cursor_pos.single().normalized.unwrap().y) * 100.0;
-         // block_hover_frame_style.left = Val::Px(relative_cursor_pos.single().normalized.unwrap().x) * 100.0;
-    }   
+    // It's much easier, make the frames invisible children and turn them on with hover and stuff
+    // the selection frames can also be children i guess
+
+
+    // // if a block is hovered...
+    // if let Some(hovered_entity) = selection.new_hovered_block {
+    //     // and if the hovered block is new... 
+    //     if selection.currently_hovered_block != selection.new_hovered_block {
+    //         // delete the old frame if it exists...
+    //         if selection.block_hover_frame.is_some() {
+    //             commands.entity(selection.block_hover_frame.unwrap()).despawn();
+    //         }
+    //         // spawn a new one..
+    //         commands.entity(hovered_entity).with_children(|parent| {
+    //             // store it in a resource...
+    //             selection.block_hover_frame = Some(
+    //                 parent.spawn((
+    //                     ImageBundle {
+    //                         image: asset_server.load("sprites/hover_frame.png").into(),
+    //                         style: selection_frame(),
+    //                         ..default()
+    //                     },
+    //                     BlockHoverFrame {}
+    //                 ))
+    //                 .insert(RelativeCursorPosition::default())
+    //                 .id()
+    //             )
+    //         });
+    //         // now the currently hovered block is the one that was new
+    //         selection.currently_hovered_block = selection.new_hovered_block;
+    //     }   
+    // }
+    // if let Ok(cursor_pos) = block_hover_frame_query.get_single_mut() {
+    //     if let Some(pos) = cursor_pos.normalized {
+    //         if selection.block_hover_frame.is_some() &&
+    //             0.0 > pos.y && pos.y > 1.0 &&
+    //             0.0 > pos.x && pos.x > 1.0
+    //         {
+    //             commands.entity(selection.block_hover_frame.unwrap()).despawn();
+    //             selection.block_hover_frame = None;
+    //         }
+    //     }
+    //      // block_hover_frame_style.top = Val::Px(relative_cursor_pos.single().normalized.unwrap().y) * 100.0;
+    //      // block_hover_frame_style.left = Val::Px(relative_cursor_pos.single().normalized.unwrap().x) * 100.0;
+    // }   
 }
 
 pub fn interact_with_ui_loot(

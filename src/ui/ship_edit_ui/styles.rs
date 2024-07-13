@@ -16,9 +16,9 @@ pub fn wrapp() -> Style {
 
 pub fn grid_menu() -> Style {
     Style {
-    width: Val::Px(600.0), 
-    height: Val::Px(600.0),
-    padding: UiRect::all(Val::Px(10.0)),
+    width: Val::VMin(90.0), 
+    height: Val::VMin(90.0),
+    //padding: UiRect::all(Val::Px(10.0)),
     flex_direction: FlexDirection::Column,
     flex_wrap: FlexWrap::Wrap,
     align_content: AlignContent::FlexStart,
@@ -50,9 +50,8 @@ pub fn info_menu() -> Style {
 
 pub fn block() -> Style {
     Style {
-    width: Val::Px(100.0), 
-    height: Val::Px(100.0),
-    margin: UiRect::all(Val::Px(8.0)),
+    width: Val::VMin(18.0), 
+    height: Val::VMin(18.0),
     ..Style::DEFAULT
     }
 }

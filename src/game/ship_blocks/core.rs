@@ -60,6 +60,7 @@ impl Spawn for Core {
         parent.spawn(
             ImageBundle {
                 image: asset_server.load("sprites/core.png").into(),
+                z_index: ZIndex::Local(2),
                 ..default()
             }
         );

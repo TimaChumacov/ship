@@ -46,6 +46,7 @@ pub fn spawn_camera(
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window = window_query.get_single().unwrap();
+    println!("WIDTH AND HEIGHT: {} AND {}", window.width(), window.height());
     commands.spawn((
         Camera2dBundle {
             transform: Transform::from_xyz(

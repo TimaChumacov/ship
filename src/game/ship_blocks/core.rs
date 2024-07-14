@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::{game::{Collider, Destructible}, general::components::SceneElement};
+use crate::{game::{Collider, Destructible}, general::components::SceneElement, ui::ship_edit_ui::components::UISprite};
 
 use super::{components::Block, traits::{Description, Spawn}};
 
@@ -57,13 +57,14 @@ impl Spawn for Core {
         parent: &mut ChildBuilder, 
         asset_server: &Res<AssetServer>
     ) {
-        parent.spawn(
+        parent.spawn((
             ImageBundle {
                 image: asset_server.load("sprites/core.png").into(),
-                z_index: ZIndex::Local(2),
+                z_index: ZIndex::Global(3),
                 ..default()
-            }
-        );
+            },
+            UISprite {}
+        ));
     }
 }
 

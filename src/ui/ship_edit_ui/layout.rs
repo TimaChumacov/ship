@@ -50,73 +50,80 @@ fn spawn_ui(
     commands.spawn((
         NodeBundle {
             style: wrapp(),
-            background_color: BLOCK_COLOR.into(),
             ..default()
         },
         ShipEditMenu {}
     )).with_children(|parent| {
-        // // --- left info menu ---
-        // parent.spawn(
-        //     NodeBundle {
-        //         style: info_menu(),
-        //         background_color: MAIN_COLOR.into(),
-        //         ..default()
-        //     }
-        // ).with_children(|parent| {
-        //     // --- Title: Block Name ---
-        //     parent.spawn((
-        //         TextBundle {
-        //             text: Text {
-        //                 sections: vec![TextSection::new(get_generic_title(), title())],
-        //                 ..default()
-        //             },
-        //             ..default()
-        //         },
-        //         SelectedLootTitle {}
-        //     ));
-        //     // --- Image: Block Sprite ---
-        //     parent.spawn((
-        //         NodeBundle {
-        //             style: block(),
-        //             background_color: BLOCK_COLOR.into(),
-        //             ..default()
-        //         },
-        //         SelectedLootIcon {}
-        //     ));
-        //     // --- Button: deselect selected block ---
-        //     parent.spawn((
-        //         ButtonBundle {
-        //             style: unselect_button(),
-        //             background_color: BLOCK_COLOR.into(),
-        //             ..default()
-        //         },
-        //         DeselectButton {}
-        //     )).with_children(|parent| {
-        //         parent.spawn(
-        //             TextBundle {
-        //                 text: Text {
-        //                     sections: vec![TextSection::new("Deselect", text())],
-        //                     ..default()
-        //                 },
-        //                 ..default()
-        //             }
-        //         );
-        //     });
-        //     // --- Text: Block description ---
-        //     parent.spawn((
-        //         TextBundle {
-        //             text: Text {
-        //                 sections: vec![
-        //                     TextSection::new(get_generic_stats(), stats_text()),
-        //                     TextSection::new(get_generic_info(), text())
-        //                 ],
-        //                 ..default()
-        //             },
-        //             ..default()
-        //         },
-        //         SelectedLootDescription {}
-        //     ));
-        // });
+        // --- left info menu ---
+        parent.spawn(
+            NodeBundle {
+                style: info_menu(),
+                background_color: Color::WHITE.into(),
+                ..default()
+            }
+        ).with_children(|parent| {
+            // --- Bg image ---
+            parent.spawn(
+                ImageBundle {
+                    image: asset_server.load("sprites/ui_menu.png").into(),
+                    style: absolute(),
+                    ..default()
+                }
+            );
+            // --- Title: Block Name ---
+            parent.spawn((
+                TextBundle {
+                    text: Text {
+                        sections: vec![TextSection::new(get_generic_title(), title())],
+                        ..default()
+                    },
+                    ..default()
+                },
+                SelectedLootTitle {}
+            ));
+            // --- Image: Block Sprite ---
+            parent.spawn((
+                NodeBundle {
+                    style: block(),
+                    background_color: BLOCK_COLOR.into(),
+                    ..default()
+                },
+                SelectedLootIcon {}
+            ));
+            // --- Button: deselect selected block ---
+            parent.spawn((
+                ButtonBundle {
+                    style: unselect_button(),
+                    background_color: BLOCK_COLOR.into(),
+                    ..default()
+                },
+                DeselectButton {}
+            )).with_children(|parent| {
+                parent.spawn(
+                    TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new("Deselect", text())],
+                            ..default()
+                        },
+                        ..default()
+                    }
+                );
+            });
+            // --- Text: Block description ---
+            parent.spawn((
+                TextBundle {
+                    text: Text {
+                        sections: vec![
+                            TextSection::new(get_generic_stats(), stats_text()),
+                            TextSection::new(get_generic_info(), text())
+                        ],
+                        ..default()
+                    },
+                    ..default()
+                },
+                SelectedLootDescription {}
+            ));
+        });
         // --- grid edit menu ---
         parent.spawn((
             NodeBundle {
@@ -133,7 +140,7 @@ fn spawn_ui(
                         ButtonBundle {
                             style: block(),
                             border_color: BLOCK_COLOR.into(),
-                            background_color: BLOCK_COLOR.into(),
+                            //background_color: BLOCK_COLOR.into(),
                             ..default()
                         },
                         UiBlock {
@@ -146,9 +153,9 @@ fn spawn_ui(
                         } 
                         parent.spawn((
                             ImageBundle {
-                                image: asset_server.load("sprites/hover_frame.png").into(),
+                                image: asset_server.load("sprites/select_frame.png").into(),
                                 style: selection_frame(),
-                                z_index: ZIndex::Local(1),
+                                z_index: ZIndex::Global(2),
                                 visibility: Visibility::Hidden,
                                 ..default()
                             },
@@ -157,13 +164,8 @@ fn spawn_ui(
                         parent.spawn(
                             ImageBundle {
                                 image: asset_server.load("sprites/ui_block.png").into(),
-                                style: Style {
-                                    position_type: PositionType::Absolute,
-                                    width: Val::Percent(100.0),
-                                    height: Val::Percent(100.0),
-                                    ..default()
-                                },
-                                z_index: ZIndex::Local(0),
+                                style: absolute(),
+                                z_index: ZIndex::Global(1),
                                 ..default()
                             },
                         );
@@ -171,16 +173,30 @@ fn spawn_ui(
                 };
             };
         });
-        // // --- right selection menu ---
-        // parent.spawn((
-        //     NodeBundle {
-        //         style: loot_menu(),
-        //         background_color: MAIN_COLOR.into(),
-        //         ..default()
-        //     },
-        //     LootMenu {}
-        // )).with_children(|parent| {
-        //     player_res.spawn_loot_ui(parent, &asset_server);
-        // });
+        // --- Loot menu ---
+        parent.spawn(
+            NodeBundle {
+                style: loot_menu(),
+                ..default()
+            }
+        ).with_children(|parent| {
+            // --- Bg image ---
+            parent.spawn(
+                ImageBundle {
+                    image: asset_server.load("sprites/ui_menu.png").into(),
+                    style: absolute(),
+                    ..default()
+                }
+            );
+            // --- Wrapp for loot grid ---
+            parent.spawn((
+                NodeBundle {
+                    style: loot_grid_wrapp(),
+                    ..default()
+                },
+                LootMenu {}
+            ));
+            player_res.spawn_loot_ui(parent, &asset_server);
+        });
     });
 }

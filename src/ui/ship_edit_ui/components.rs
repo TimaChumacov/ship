@@ -23,6 +23,9 @@ pub struct LootUiBlock {
 }
 
 #[derive(Component)]
+pub struct UISprite {}
+
+#[derive(Component)]
 pub struct SelectedLootIcon {}
 
 #[derive(Component)]

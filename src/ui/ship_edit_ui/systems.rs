@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::ui::RelativeCursorPosition;
+use bevy_kira_audio::{Audio, AudioControl};
 use crate::game::player::components::{PlayerLoot, ShipLayout};
 use crate::game::ship_blocks::traits::{Rotate, Spawn};
 use super::styles::selection_frame;
@@ -16,18 +17,24 @@ pub fn interact_with_ui_blocks(
     mut selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     loot_menu_query: Query<Entity, With<LootMenu>>,
     mut button_query: Query<
-        (&Interaction, &Children, &UiBlock, Entity),
+        (&Interaction, &Children, &UiBlock, Entity, &Children),
         Changed<Interaction>
     >,
-    mut frame_query: Query<&mut Visibility, With<BlockHoverFrame>>
+    block_sprite_query: Query<Entity, With<UISprite>>,
+    mut frame_query: Query<&mut Visibility, With<BlockHoverFrame>>,
+    audio: Res<Audio>
 ) {
-    for (interaction, children, ui_block, block_entity) in button_query.iter_mut() {
+    for (interaction, children, ui_block, block_entity, block_children) in button_query.iter_mut() {
         match *interaction {
             Interaction::Pressed => {
                 if ship_layout.old_blocks_empty() {
                     ship_layout.old_blocks = ship_layout.blocks.clone();
                 }
-                commands.entity(block_entity).despawn_descendants();
+                for child in block_children {
+                    if let Ok(sprite_entity) = block_sprite_query.get(*child) {
+                        commands.entity(sprite_entity).despawn_recursive();
+                    }
+                }
                 let mut pressed_block = ship_layout.blocks[ui_block.x][ui_block.y].clone();
                 if pressed_block == None {
                     if let Some(selected_block) = player_loot.get_selected_loot() {
@@ -48,6 +55,7 @@ pub fn interact_with_ui_blocks(
             Interaction::Hovered => {
                 for child in children {
                     if let Ok(mut frame_visibility) = frame_query.get_mut(*child) {
+                        audio.play(asset_server.load("audio/click.ogg"));
                         *frame_visibility = Visibility::Visible;
                     }
                 }

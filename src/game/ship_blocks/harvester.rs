@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::{game::{Collider, Destructible}, general::components::SceneElement};
+use crate::{game::{Collider, Destructible}, general::components::SceneElement, ui::ship_edit_ui::components::UISprite};
 
 use super::{components::Block, traits::*};
 
@@ -118,18 +118,15 @@ impl Spawn for Harvester {
         parent: &mut ChildBuilder, 
         asset_server: &Res<AssetServer>
     ) {
-        parent.spawn(
+        parent.spawn((
             ImageBundle {
                 transform: Transform::from_rotation(Quat::from_rotation_z(self.rotation.to_radians())),
                 image: asset_server.load("sprites/grappler.png").into(),
-                z_index: ZIndex::Local(2),
-                // style: Style {
-                //     position_type: PositionType::Absolute,
-                //     ..default()
-                // },
+                z_index: ZIndex::Global(3),
                 ..default()
-            }
-        );
+            },
+            UISprite {}
+        ));
     }
 }
 

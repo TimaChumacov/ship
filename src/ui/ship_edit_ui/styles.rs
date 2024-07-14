@@ -42,7 +42,18 @@ pub fn loot_menu() -> Style {
     Style {
     width: Val::VMin(40.0), 
     height: Val::VMin(91.0),
-    margin: UiRect { left: Val::VMin(2.0), right:  Val::VMin(2.0), top: Val::ZERO, bottom: Val::ZERO },
+    //margin: UiRect { left: Val::VMin(2.0), right:  Val::VMin(2.0), top: Val::ZERO, bottom: Val::ZERO },
+    flex_wrap: FlexWrap::Wrap,
+    ..Style::DEFAULT
+    }
+}
+
+pub fn loot_title() -> Style {
+    Style {
+    width: Val::Percent(100.0), 
+    height: Val::Percent(6.5),
+    align_items: AlignItems::End,
+    justify_content: JustifyContent::Center,
     ..Style::DEFAULT
     }
 }
@@ -50,10 +61,12 @@ pub fn loot_menu() -> Style {
 pub fn loot_grid_wrapp() -> Style {
     Style {
     width: Val::Percent(100.0), 
-    height: Val::Percent(100.0),
+    height: Val::Percent(93.5),
+    padding: UiRect { left: Val::VMin(1.3), right: Val::VMin(1.3), top: Val::VMin(0.0), bottom: Val::VMin(0.0) },
     flex_direction: FlexDirection::Row,
     flex_wrap: FlexWrap::Wrap,
     align_content: AlignContent::FlexStart,
+    justify_content: JustifyContent::Start,
     ..Style::DEFAULT
     }
 }
@@ -76,10 +89,9 @@ pub fn block() -> Style {
 }
 pub fn mini_block() -> Style {
     Style {
-    width: Val::Px(60.0), 
-    height: Val::Px(60.0),
-    margin: UiRect::all(Val::Px(5.0)),
-    border: UiRect::all(Val::Px(3.0)),
+    width: Val::VMin(9.0), 
+    height: Val::VMin(9.0),
+    margin: UiRect::all(Val::VMin(0.15)),
     ..Style::DEFAULT
     }
 }

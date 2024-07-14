@@ -188,6 +188,15 @@ fn spawn_ui(
                     ..default()
                 }
             );
+            // --- Title ---
+            parent.spawn(
+                NodeBundle {
+                    style: loot_title(),
+                    ..default()
+                }
+            ).with_children(|parent| {
+                parent.spawn(TextBundle::from_section("Loot 32/32", title()));
+            });
             // --- Wrapp for loot grid ---
             parent.spawn((
                 NodeBundle {

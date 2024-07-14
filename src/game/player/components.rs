@@ -27,7 +27,7 @@ pub struct PlayerLoot {
 impl Default for PlayerLoot {
     fn default() -> Self {
         PlayerLoot {
-            looted_blocks: vec![],
+            looted_blocks: vec![Blocks::Turret(Turret::default()); 35],
             selected_loot_index: None,
         }
     }

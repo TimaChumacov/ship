@@ -153,7 +153,7 @@ fn spawn_ui(
                         } 
                         parent.spawn((
                             ImageBundle {
-                                image: asset_server.load("sprites/select_frame.png").into(),
+                                image: asset_server.load("sprites/hover_frame.png").into(),
                                 style: selection_frame(),
                                 z_index: ZIndex::Global(2),
                                 visibility: Visibility::Hidden,
@@ -203,9 +203,11 @@ fn spawn_ui(
                     style: loot_grid_wrapp(),
                     ..default()
                 },
-                LootMenu {}
-            ));
-            player_res.spawn_loot_ui(parent, &asset_server);
+                LootMenu {},
+                RelativeCursorPosition::default(),
+            )).with_children(|parent| {
+                player_res.spawn_loot_ui(parent, &asset_server);
+            });
         });
     });
 }

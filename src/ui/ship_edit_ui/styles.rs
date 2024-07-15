@@ -91,7 +91,18 @@ pub fn mini_block() -> Style {
     Style {
     width: Val::VMin(9.0), 
     height: Val::VMin(9.0),
+    border: UiRect::all(Val::VMin(0.3)),
     margin: UiRect::all(Val::VMin(0.15)),
+    ..Style::DEFAULT
+    }
+}
+
+pub fn draggable() -> Style {
+    Style {
+    width: Val::VMin(14.0), 
+    height: Val::VMin(14.0),
+    position_type: PositionType::Absolute,
+    top: Val::Percent(-100.0),
     ..Style::DEFAULT
     }
 }
@@ -111,6 +122,17 @@ pub fn selection_frame() -> Style {
         position_type: PositionType::Absolute,
         top: Val::VMin(-0.5),
         left: Val::VMin(-0.5),
+        ..Style::DEFAULT
+    }
+}
+
+pub fn loot_selection_frame() -> Style {
+    Style {
+        width: Val::VMin(10.0), 
+        height: Val::VMin(10.0),
+        position_type: PositionType::Absolute,
+        top: Val::VMin(-1.0),
+        left: Val::VMin(-1.0),
         ..Style::DEFAULT
     }
 }

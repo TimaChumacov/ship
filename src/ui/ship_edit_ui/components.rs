@@ -20,10 +20,14 @@ pub struct UiBlock {
 pub struct LootUiBlock {
     // index of the loot from Player.looted_blocks that this ui block represents
     pub index: usize,
+    pub is_dragged: bool,
 }
 
 #[derive(Component)]
 pub struct UISprite {}
+
+#[derive(Component)]
+pub struct Draggable {}
 
 #[derive(Component)]
 pub struct SelectedLootIcon {}
@@ -40,3 +44,6 @@ pub struct DeselectButton {}
 // Components for Selection stuff
 #[derive(Component)]
 pub struct BlockHoverFrame {}
+
+#[derive(Component)]
+pub struct LootSelectFrame {}

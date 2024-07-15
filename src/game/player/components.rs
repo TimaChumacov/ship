@@ -22,6 +22,7 @@ impl Player {
 pub struct PlayerLoot {
     pub looted_blocks: Vec<Blocks>,
     pub selected_loot_index: Option<usize>,
+    pub is_loot_dragged: bool,
 }
 
 impl Default for PlayerLoot {
@@ -29,6 +30,7 @@ impl Default for PlayerLoot {
         PlayerLoot {
             looted_blocks: vec![Blocks::Turret(Turret::default()); 35],
             selected_loot_index: None,
+            is_loot_dragged: false,
         }
     }
 }
@@ -52,13 +54,13 @@ impl PlayerLoot {
         &mut self, 
         target_index: usize,
         commands: &mut Commands,
-        selected_loot_icon: Query<Entity, With<SelectedLootIcon>>,
-        selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
-        selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
+        selected_loot_icon: &Query<Entity, With<SelectedLootIcon>>,
+        mut selected_loot_text: &mut Query<&mut Text, With<SelectedLootDescription>>,
+        mut selected_loot_title: &mut Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
         asset_server: &Res<AssetServer>
     ) {
         self.selected_loot_index = Some(target_index);
-        self.redraw_selected_loot(commands, selected_loot_icon, selected_loot_text, selected_loot_title, asset_server);
+        self.redraw_selected_loot(commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title, asset_server);
     }
 
     pub fn deselect_loot(
@@ -81,9 +83,9 @@ impl PlayerLoot {
     pub fn redraw_selected_loot(
         &self,
         commands: &mut Commands,
-        selected_loot_ui: Query<Entity, With<SelectedLootIcon>>,
-        mut selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
-        mut selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
+        selected_loot_ui: &Query<Entity, With<SelectedLootIcon>>,
+        selected_loot_text: &mut Query<&mut Text, With<SelectedLootDescription>>,
+        selected_loot_title: &mut Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
         asset_server: &Res<AssetServer>
     ) {
         let selected_loot_ui_entity = selected_loot_ui.single();
@@ -135,7 +137,8 @@ impl PlayerLoot {
                     ..default()
                 },
                 LootUiBlock {
-                    index: i
+                    index: i,
+                    is_dragged: false
                 }
             )).with_children(|parent| {
                 loot.spawn_ui(parent, asset_server)

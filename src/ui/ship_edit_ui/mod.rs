@@ -25,6 +25,7 @@ impl Plugin for ShipEditUiPlugin {
             interact_with_ui_loot,
             deselect_button,
             rotate_loot,
+            update_draggable
         ).run_if(in_state(PauseState::Paused)));
     }
 }

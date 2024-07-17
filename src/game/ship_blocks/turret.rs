@@ -60,7 +60,7 @@ impl Spawn for Turret {
             ImageBundle {
                 transform: Transform::from_rotation(Quat::from_rotation_z(self.rotation.to_radians())),
                 image: asset_server.load("sprites/turret.png").into(),
-                z_index: ZIndex::Global(3),
+                z_index: ZIndex::Global(4),
                 ..default()
             },
             UISprite {}

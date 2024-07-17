@@ -9,11 +9,12 @@ pub struct LootMenu {}
 #[derive(Component)]
 pub struct Gridmenu {}
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
 pub struct UiBlock {
     //corresponding x and y indexes of the ship_layout vector element this ui block is reading from
     pub x: usize,
     pub y: usize,
+    pub is_dragged: bool,
 }
 
 #[derive(Component)]

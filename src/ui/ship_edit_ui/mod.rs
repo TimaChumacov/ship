@@ -21,7 +21,7 @@ impl Plugin for ShipEditUiPlugin {
         .add_systems(Update, show_or_hide_ui.run_if(in_state(AppState::Game)))
         .add_systems(Update, (
             interact_with_ui_blocks,
-            animate_selection,
+            check_dragg_and_dropped,
             interact_with_ui_loot,
             deselect_button,
             rotate_loot,

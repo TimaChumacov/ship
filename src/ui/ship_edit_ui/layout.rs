@@ -146,6 +146,7 @@ fn spawn_ui(
                         UiBlock {
                             x: a_usize,
                             y: b_usize,
+                            is_dragged: false
                         },
                     )).with_children(|parent| {
                         if let Some(y) = y {

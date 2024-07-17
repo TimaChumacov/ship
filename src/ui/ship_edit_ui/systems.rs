@@ -3,9 +3,9 @@ use bevy::ui::RelativeCursorPosition;
 use bevy::window::PrimaryWindow;
 use bevy_kira_audio::{Audio, AudioControl};
 use crate::game::player::components::{PlayerLoot, ShipLayout};
-use crate::game::ship_blocks::components::Blocks;
+use crate::game::ship_blocks::components::{Block, Blocks};
 use crate::game::ship_blocks::traits::{Rotate, Spawn};
-use super::styles::{draggable, loot_selection_frame};
+use super::styles::{draggable, loot_selection_frame, selection_frame};
 use super::{components::*, Selection};
 
 #[derive(Default)]
@@ -15,7 +15,6 @@ pub struct TimeToDragg {
 
 pub fn interact_with_ui_blocks(
     mut commands: Commands,
-    mut selection: ResMut<Selection>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
     mouse: Res<ButtonInput<MouseButton>>,
@@ -26,144 +25,132 @@ pub fn interact_with_ui_blocks(
     mut selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     loot_menu_query: Query<Entity, With<LootMenu>>,
     mut button_query: Query<
-        (&Interaction, &Children, &UiBlock, Entity, &Children),
+        (&Interaction, &Children, &mut UiBlock, Entity, &Children),
         Changed<Interaction>
     >,
-    block_sprite_query: Query<Entity, With<UISprite>>,
     mut frame_query: Query<&mut Visibility, With<BlockHoverFrame>>,
+    old_frame_query: Query<Entity, With<LootSelectFrame>>,
+    old_draggable_query: Query<Entity, With<Draggable>>,
+    block_sprite_query: Query<Entity, With<UISprite>>,
 ) {
-    for (interaction, children, ui_block, block_entity, block_children) in button_query.iter_mut() {
+    for (interaction, children, mut ui_block, block_entity, block_children) in button_query.iter_mut() {
         match *interaction {
             Interaction::Pressed => {
-                if ship_layout.old_blocks_empty() {
-                    ship_layout.old_blocks = ship_layout.blocks.clone();
+                if let Some(pressed_block) = ship_layout.blocks[ui_block.x][ui_block.y].clone() {
+                    player_loot.deselect_loot(&mut commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title);
+                    player_loot.redraw_selected_loot(&pressed_block, &mut commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title, &asset_server);
+                    spawn_loot_frame( TargetType::Block, block_entity, &mut commands, &asset_server, &old_frame_query);
+                    spawn_draggable(&pressed_block, &mut commands, &asset_server, &loot_menu_query, &old_draggable_query);
+                    ui_block.is_dragged = true;
+                    ship_layout.dragged_block = Some(block_entity);
+                    println!("DRAGGED BLOCK IS ID-{}", block_entity.index());
                 }
-                for child in block_children {
-                    if let Ok(sprite_entity) = block_sprite_query.get(*child) {
-                        commands.entity(sprite_entity).despawn_recursive();
-                    }
-                }
-                let mut pressed_block = ship_layout.blocks[ui_block.x][ui_block.y].clone();
-                if pressed_block == None {
-                    if let Some(selected_block) = player_loot.get_selected_loot() {
-                        pressed_block = Some(selected_block.clone());
-                        commands.entity(block_entity).with_children(|parent| {
-                            selected_block.spawn_ui(parent, &asset_server)
-                        });
-                        player_loot.remove_used_loot(&mut commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title);
-                        player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server);
-                    }
-                } else {
-                    player_loot.put_block_in_loot(&pressed_block.unwrap());
-                    pressed_block = None;
-                }
-                ship_layout.blocks[ui_block.x][ui_block.y] = pressed_block;
-                player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server)
             },
             Interaction::Hovered => {
+                if ui_block.is_dragged {
+                    despawn_draggable(&mut commands, &old_draggable_query);
+                    ui_block.is_dragged = false;
+                    ship_layout.dragged_block = None;
+                    println!("HOVER BLOCK ID-{}: DRAGGED BLOCK IS NONE", block_entity.index());
+                }
+
+                player_loot.hovered_block = Some(block_entity);
+
                 for child in children {
                     if let Ok(mut frame_visibility) = frame_query.get_mut(*child) {
                         audio.play(asset_server.load("audio/click.ogg")).with_volume(0.5);
                         *frame_visibility = Visibility::Visible;
                     }
                 }
-                println!("{} and {}", player_loot.is_loot_dragged, mouse.just_released(MouseButton::Left));
-                if player_loot.is_loot_dragged && mouse.just_released(MouseButton::Left) {
-                    if ship_layout.old_blocks_empty() {
-                        ship_layout.old_blocks = ship_layout.blocks.clone();
-                    }
-                    for child in block_children {
-                        if let Ok(sprite_entity) = block_sprite_query.get(*child) {
-                            commands.entity(sprite_entity).despawn_recursive();
-                        }
-                    }
-                    let mut pressed_block = ship_layout.blocks[ui_block.x][ui_block.y].clone();
-                    if pressed_block == None {
-                        if let Some(selected_block) = player_loot.get_selected_loot() {
-                            pressed_block = Some(selected_block.clone());
-                            commands.entity(block_entity).with_children(|parent| {
-                                selected_block.spawn_ui(parent, &asset_server)
-                            });
-                            player_loot.remove_used_loot(&mut commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title);
-                            player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server);
-                        }
-                    } else {
-                        player_loot.put_block_in_loot(&pressed_block.unwrap());
-                        pressed_block = None;
-                    }
-                    ship_layout.blocks[ui_block.x][ui_block.y] = pressed_block;
-                    player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server)
-                }
             },
             Interaction::None => {
+                if ui_block.is_dragged {
+                    despawn_draggable(&mut commands, &old_draggable_query);
+                    ui_block.is_dragged = false;
+                    ship_layout.dragged_block = None;
+                    println!("NONE BLOCK ID-{}: DRAGGED BLOCK IS NONE", block_entity.index());
+                    // Interaction and dragg update func try do stuff at the same time, so it's luck which one goes first
+                }
+
+                if player_loot.hovered_block == Some(block_entity) {
+                    player_loot.hovered_block = None;
+                }
+
                 for child in children {
                     if let Ok(mut frame_visibility) = frame_query.get_mut(*child) {
                         *frame_visibility = Visibility::Hidden;
                     }
                 }
-                //*border_color = Color::NONE.into();
-                // if let Some(old_frame) = selection.block_hover_frame {
-                //     selection.block_hover_frame = None;
-                //     commands.entity(old_frame).despawn();
-                // }
             }
         }
     }
 }
 
-pub fn animate_selection(
+pub fn check_dragg_and_dropped(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    //relative_cursor_pos: Query<&RelativeCursorPosition>,
-    mut selection: ResMut<Selection>,
-    grid_query: Query<Entity, With<Gridmenu>>,
-    mut block_hover_frame_query: Query<&RelativeCursorPosition, With<BlockHoverFrame>>,
+    mouse: Res<ButtonInput<MouseButton>>,
+    mut ship_layout: ResMut<ShipLayout>,
+    mut player_loot: ResMut<PlayerLoot>,
+    selected_loot_icon: Query<Entity, With<SelectedLootIcon>>,
+    mut selected_loot_text: Query<&mut Text, With<SelectedLootDescription>>,
+    mut selected_loot_title: Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
+    loot_menu_query: Query<Entity, With<LootMenu>>,
+    button_query: Query<(&UiBlock, &Children)>,
+    block_sprite_query: Query<Entity, With<UISprite>>,
+    old_frame_query: Query<Entity, With<LootSelectFrame>>,
 ) {
-    // It's much easier, make the frames invisible children and turn them on with hover and stuff
-    // the selection frames can also be children i guess
+    if let Some(hovered_entity) = player_loot.hovered_block {
+        if let Ok((ui_hov_block, hov_block_children)) = button_query.get(hovered_entity) {
+            if (player_loot.is_loot_dragged) && 
+                mouse.just_released(MouseButton::Left) {
+                println!("{}, {}, {}", player_loot.is_loot_dragged, ship_layout.dragged_block.is_some(), hovered_entity.index());
+                for child in hov_block_children {
+                    if let Ok(sprite_entity) = block_sprite_query.get(*child) {
+                        println!("blasphemous child perished");
+                        commands.entity(sprite_entity).despawn_recursive();
+                    }
+                }
+                let mut pressed_block = ship_layout.blocks[ui_hov_block.x][ui_hov_block.y].clone();
+                if pressed_block.is_some() {
+                    player_loot.put_block_in_loot(&pressed_block.unwrap());
+                    pressed_block = None;
+                }
+                if let Some(selected_block) = player_loot.get_selected_loot() {
+                    pressed_block = Some(selected_block.clone());
+                    commands.entity(hovered_entity).with_children(|parent| {
+                        selected_block.spawn_ui(parent, &asset_server)
+                    });
+                    player_loot.remove_used_loot(&mut commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title);
+                    player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server);
+                }
+                if let Some(block_entity) = ship_layout.dragged_block {
+                    let (ui_block, block_children) = button_query.get(block_entity).unwrap();
+                    for child in block_children {
+                        if let Ok(sprite_entity) = block_sprite_query.get(*child) {
+                            println!("oh bayle, the blasphemous child perished!");
+                            commands.entity(sprite_entity).despawn_recursive();
+                        }
+                    }
+                    pressed_block = ship_layout.blocks[ui_block.x][ui_block.y].clone();
+                    commands.entity(hovered_entity).with_children(|parent| {
+                        pressed_block.as_ref().unwrap().spawn_ui(parent, &asset_server)
+                    });
+                    ship_layout.dragged_block = None;
+                    ship_layout.blocks[ui_block.x][ui_block.y] = None;
+                    player_loot.deselect_loot(&mut commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title);
+                    spawn_loot_frame(TargetType::Block, hovered_entity, &mut commands, &asset_server, &old_frame_query)
+                }
+                ship_layout.blocks[ui_hov_block.x][ui_hov_block.y] = pressed_block;
+                player_loot.redraw_loot_ui(&mut commands, &loot_menu_query, &asset_server);
 
-
-    // // if a block is hovered...
-    // if let Some(hovered_entity) = selection.new_hovered_block {
-    //     // and if the hovered block is new... 
-    //     if selection.currently_hovered_block != selection.new_hovered_block {
-    //         // delete the old frame if it exists...
-    //         if selection.block_hover_frame.is_some() {
-    //             commands.entity(selection.block_hover_frame.unwrap()).despawn();
-    //         }
-    //         // spawn a new one..
-    //         commands.entity(hovered_entity).with_children(|parent| {
-    //             // store it in a resource...
-    //             selection.block_hover_frame = Some(
-    //                 parent.spawn((
-    //                     ImageBundle {
-    //                         image: asset_server.load("sprites/hover_frame.png").into(),
-    //                         style: selection_frame(),
-    //                         ..default()
-    //                     },
-    //                     BlockHoverFrame {}
-    //                 ))
-    //                 .insert(RelativeCursorPosition::default())
-    //                 .id()
-    //             )
-    //         });
-    //         // now the currently hovered block is the one that was new
-    //         selection.currently_hovered_block = selection.new_hovered_block;
-    //     }   
-    // }
-    // if let Ok(cursor_pos) = block_hover_frame_query.get_single_mut() {
-    //     if let Some(pos) = cursor_pos.normalized {
-    //         if selection.block_hover_frame.is_some() &&
-    //             0.0 > pos.y && pos.y > 1.0 &&
-    //             0.0 > pos.x && pos.x > 1.0
-    //         {
-    //             commands.entity(selection.block_hover_frame.unwrap()).despawn();
-    //             selection.block_hover_frame = None;
-    //         }
-    //     }
-    //      // block_hover_frame_style.top = Val::Px(relative_cursor_pos.single().normalized.unwrap().y) * 100.0;
-    //      // block_hover_frame_style.left = Val::Px(relative_cursor_pos.single().normalized.unwrap().x) * 100.0;
-    // }   
+                if ship_layout.old_blocks_empty() {
+                    println!("old ones were denied their silence");
+                    ship_layout.old_blocks = ship_layout.blocks.clone();
+                }
+            }
+        }
+    }
 }
 
 pub fn interact_with_ui_loot(
@@ -187,11 +174,9 @@ pub fn interact_with_ui_loot(
         match *interaction {
             Interaction::Pressed => {
                 player_loot.select_loot(loot_ui.index, &mut commands, &selected_loot_ui, &mut selected_loot_text, &mut selected_loot_title, &asset_server);
-                spawn_loot_frame(block_entity, &mut commands, &asset_server, &old_frame_query);
+                spawn_loot_frame( TargetType::Loot, block_entity, &mut commands, &asset_server, &old_frame_query);
                 spawn_draggable(player_loot.get_selected_loot().unwrap(), &mut commands, &asset_server, &loot_menu_query, &old_draggable_query);
                 loot_ui.is_dragged = true;
-                //player_loot.redraw_selected_loot(&mut commands, selected_loot_ui, &asset_server);
-                //*border_color = Color::PURPLE.into();
             },
             Interaction::Hovered => {
                 *border_color = Color::RED.into();
@@ -202,8 +187,6 @@ pub fn interact_with_ui_loot(
             },
             Interaction::None => {
                 *border_color = Color::NONE.into();
-                //player_loot.deselect_loot(&mut commands, &selected_loot_ui, &mut selected_loot_text, &mut selected_loot_title);
-                //despawn_loot_frame(&mut commands, &old_frame_query);
                 if loot_ui.is_dragged {
                     despawn_draggable(&mut commands, &old_draggable_query);
                     loot_ui.is_dragged = false;
@@ -213,7 +196,13 @@ pub fn interact_with_ui_loot(
     }
 }
 
+pub enum TargetType {
+    Block,
+    Loot
+}
+
 pub fn spawn_loot_frame(
+    target_type: TargetType,
     target_entity: Entity,
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
@@ -221,12 +210,17 @@ pub fn spawn_loot_frame(
 ) {
     despawn_loot_frame(commands, old_frame_query);
 
+    let frame_style: Style;
+    match target_type {
+        TargetType::Block => {frame_style = selection_frame()},
+        TargetType::Loot => {frame_style = loot_selection_frame()},
+    }
     commands.entity(target_entity).with_children(|parent| {
         parent.spawn((
             ImageBundle {
                 image: asset_server.load("sprites/select_frame.png").into(),
-                style: loot_selection_frame(),
-                z_index: ZIndex::Global(1),
+                style: frame_style,
+                z_index: ZIndex::Global(3),
                 ..default()
             },
             LootSelectFrame {}
@@ -285,7 +279,7 @@ pub fn update_draggable(
 ) {
     
     if let Ok(mut draggable_style) = draggable_query.get_single_mut() {
-        if time_to_dragg.time_pressed < 0.3 {
+        if time_to_dragg.time_pressed < 0.15 {
             time_to_dragg.time_pressed += time.delta_seconds()
         } else {
             if !player_loot.is_loot_dragged {
@@ -343,7 +337,7 @@ pub fn rotate_loot(
         // "if" here because the player can press R without selecting anything
         if let Some(selected_loot) = player_loot.get_selected_loot_mut() {
             selected_loot.rotate_90_right();
-            player_loot.redraw_selected_loot(&mut commands, &selected_loot_ui, &mut selected_loot_text, &mut selected_loot_title, &asset_server);
+            player_loot.redraw_selected_loot( player_loot.get_selected_loot().unwrap(), &mut commands, &selected_loot_ui, &mut selected_loot_text, &mut selected_loot_title, &asset_server);
         }
     }
 }

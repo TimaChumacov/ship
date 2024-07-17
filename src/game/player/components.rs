@@ -3,7 +3,7 @@ use crate::game::ship_blocks::core::Core;
 use crate::game::ship_blocks::harvester::Harvester;
 use crate::game::ship_blocks::traits::{get_generic_info, get_generic_stats, get_generic_title, Description};
 use crate::game::ship_blocks::turret::Turret;
-use crate::ui::ship_edit_ui::components::{LootMenu, SelectedLootDescription, SelectedLootIcon, SelectedLootTitle};
+use crate::ui::ship_edit_ui::components::{LootMenu, SelectedLootDescription, SelectedLootIcon, SelectedLootTitle, UiBlock};
 use crate::game::ship_blocks::{components::Blocks, traits::Spawn};
 use crate::ui::ship_edit_ui::{styles::*, components::LootUiBlock};
 
@@ -23,6 +23,7 @@ pub struct PlayerLoot {
     pub looted_blocks: Vec<Blocks>,
     pub selected_loot_index: Option<usize>,
     pub is_loot_dragged: bool,
+    pub hovered_block: Option<Entity>
 }
 
 impl Default for PlayerLoot {
@@ -31,6 +32,7 @@ impl Default for PlayerLoot {
             looted_blocks: vec![Blocks::Turret(Turret::default()); 35],
             selected_loot_index: None,
             is_loot_dragged: false,
+            hovered_block: None
         }
     }
 }
@@ -60,19 +62,19 @@ impl PlayerLoot {
         asset_server: &Res<AssetServer>
     ) {
         self.selected_loot_index = Some(target_index);
-        self.redraw_selected_loot(commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title, asset_server);
+        self.redraw_selected_loot( self.get_selected_loot().unwrap(), commands, &selected_loot_icon, &mut selected_loot_text, &mut selected_loot_title, asset_server);
     }
 
     pub fn deselect_loot(
         &mut self, 
         commands: &mut Commands,
-        selected_loot_ui: &Query<Entity, With<SelectedLootIcon>>,
+        selected_loot_icon: &Query<Entity, With<SelectedLootIcon>>,
         selected_loot_text: &mut Query<&mut Text, With<SelectedLootDescription>>,
         selected_loot_title: &mut Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
     ) {
         self.selected_loot_index = None;
-        let selected_loot_ui_entity = selected_loot_ui.single();
-        commands.entity(selected_loot_ui_entity).despawn_descendants();
+        let selected_loot_icon_entity = selected_loot_icon.single();
+        commands.entity(selected_loot_icon_entity).despawn_descendants();
         let mut selected_loot_text = selected_loot_text.single_mut();
         selected_loot_text.sections[0].value = get_generic_stats();
         selected_loot_text.sections[1].value = get_generic_info();
@@ -82,22 +84,23 @@ impl PlayerLoot {
 
     pub fn redraw_selected_loot(
         &self,
+        target_block: &Blocks,
         commands: &mut Commands,
-        selected_loot_ui: &Query<Entity, With<SelectedLootIcon>>,
+        selected_loot_icon: &Query<Entity, With<SelectedLootIcon>>,
         selected_loot_text: &mut Query<&mut Text, With<SelectedLootDescription>>,
         selected_loot_title: &mut Query<&mut Text, (With<SelectedLootTitle>, Without<SelectedLootDescription>)>,
         asset_server: &Res<AssetServer>
     ) {
-        let selected_loot_ui_entity = selected_loot_ui.single();
-        commands.entity(selected_loot_ui_entity).despawn_descendants();
-        commands.entity(selected_loot_ui_entity).with_children(|parent| {
-            self.get_selected_loot().unwrap().spawn_ui(parent, asset_server)
+        let selected_loot_icon_entity = selected_loot_icon.single();
+        commands.entity(selected_loot_icon_entity).despawn_descendants();
+        commands.entity(selected_loot_icon_entity).with_children(|parent| {
+            target_block.spawn_ui(parent, asset_server)
         });
         let mut selected_loot_text = selected_loot_text.single_mut();
-        selected_loot_text.sections[0].value = self.get_selected_loot().unwrap().get_stats();
-        selected_loot_text.sections[1].value = self.get_selected_loot().unwrap().get_info();
+        selected_loot_text.sections[0].value = target_block.get_stats();
+        selected_loot_text.sections[1].value = target_block.get_info();
         let mut selected_loot_title = selected_loot_title.single_mut();
-        selected_loot_title.sections[0].value = self.get_selected_loot().unwrap().get_title();
+        selected_loot_title.sections[0].value = target_block.get_title();
     }
 
     pub fn remove_used_loot(
@@ -158,6 +161,7 @@ impl PlayerLoot {
 pub struct ShipLayout {
     pub blocks: Vec<Vec<Option<Blocks>>>,
     pub old_blocks: Vec<Vec<Option<Blocks>>>,
+    pub dragged_block: Option<Entity>, // when a block is moved after it was already placed (so it's not taken outta loot) it's stored here
 }
 
 impl Default for ShipLayout {
@@ -169,6 +173,7 @@ impl Default for ShipLayout {
         ShipLayout {
             blocks: blocks,
             old_blocks: vec![vec![None]],
+            dragged_block: None
         }
     }
 }

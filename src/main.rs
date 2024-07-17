@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{log::LogPlugin, prelude::*};
 
 mod general;
 use bevy_kira_audio::AudioPlugin;
@@ -16,7 +16,11 @@ fn main() {
         .add_plugins((
             DefaultPlugins.set( 
             ImagePlugin::default_nearest(), 
-            ), 
+            ).set(LogPlugin {
+                filter: "off".into(),
+                level: bevy::log::Level::DEBUG,
+                update_subscriber: None
+            }), 
             AudioPlugin
     )) 
         .add_plugins(GeneralPlugin)

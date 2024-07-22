@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use super::{components::*, player::components::{PlayerLoot, ShipLayout}, ship_blocks::components::Block};
+use super::{components::*, player::components::ShipLayout, ship_blocks::components::Block};
+use crate::game::player::player_loot::PlayerLoot;
 use crate::{game::enemies::components::Enemy, general::components::SceneElement};
 
 pub fn update_destructibles(

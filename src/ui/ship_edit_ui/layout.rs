@@ -6,7 +6,9 @@ use crate::game::ship_blocks::traits::get_generic_title;
 use crate::general::states::PauseState;
 use super::components::*;
 use super::styles::*;
+use super::BlockDisplay;
 use crate::game::player::components::*;
+use crate::game::player::player_loot::PlayerLoot;
 use crate::game::ship_blocks::traits::Spawn;
 
 pub fn show_or_hide_ui(
@@ -14,11 +16,12 @@ pub fn show_or_hide_ui(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     state: Res<State<PauseState>>,
     mut next_state: ResMut<NextState<PauseState>>,
-    ui_query: Query<Entity, With<ShipEditMenu>>,
     ship_layout: ResMut<ShipLayout>,
+    player_loot: Res<PlayerLoot>,
+    mut block_display: ResMut<BlockDisplay>,
+    ui_query: Query<Entity, With<ShipEditMenu>>,
     asset_server: Res<AssetServer>,
     player_query: Query<Entity, With<Player>>,
-    mut player_loot: ResMut<PlayerLoot>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         match state.get() {
@@ -29,7 +32,7 @@ pub fn show_or_hide_ui(
             PauseState::Paused => {
                 if ship_layout.is_core_placed() {
                     next_state.set(PauseState::Running);
-                    player_loot.selected_loot_index = None;
+                    block_display.block_to_display = None;
                     let ui_entity = ui_query.single();
                     commands.entity(ui_entity).despawn_recursive();
                     if !ship_layout.old_blocks_empty() {

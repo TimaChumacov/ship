@@ -4,9 +4,12 @@ use crate::general::states::{AppState, PauseState};
 pub mod systems;
 use systems::*;
 
-use self::components::{ShipLayout, PlayerLoot};
+use self::components::ShipLayout;
 
 pub mod components;
+
+pub mod player_loot;
+use player_loot::PlayerLoot;
 
 pub struct PlayerPlugin;
 

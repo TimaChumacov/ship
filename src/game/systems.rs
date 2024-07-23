@@ -39,7 +39,7 @@ pub fn trigger_animation(
 ) {
     for ev in ev_damaged.read() {
         if let Ok(mut sprite) = target_query.get_mut(ev.0) {
-            sprite.color = Color::RED;
+            sprite.color = Color::srgb(1.0, 0.0, 0.0);
         }
     }
 }
@@ -49,10 +49,10 @@ pub fn damaged_animation(
     time: Res<Time>,
 ) {
     for (mut sprite, mut destructible) in target_query.iter_mut() {
-        if sprite.color == Color::RED {
+        if sprite.color == Color::srgb(1.0, 0.0, 0.0) {
             destructible.time_spent_red += time.delta_seconds();
             if destructible.time_spent_red >= 0.15 {
-                sprite.color = Color::WHITE;
+                sprite.color = Color::srgb(1.0, 1.0, 1.0);
                 destructible.time_spent_red = 0.0;
             }
         }

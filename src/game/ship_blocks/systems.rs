@@ -135,55 +135,56 @@ pub fn grappler_logic(
     audio: Res<Audio>,
 ) {
     for (mut grappler_transform, grappler_entity, mut grappler, children) in grappler_query.iter_mut() {
-        let (mut loot_transform, loot_entity, mut loot) = loot_query.get_mut(grappler.target.unwrap()).unwrap();
-        let mut wire_transform = wire_query.get_mut(*children.first().unwrap()).unwrap();
-        if let Ok((base_glob_transform, base_entity, mut base)) = base_query.get_mut(grappler.base.unwrap()) {
-            // defining rotation since grappler should always face away from base
-            let dir_away_from_base = (grappler_transform.translation - base_glob_transform.translation()).normalize();
-            grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir_away_from_base);
-            // logic for grappler flying to the loot
-            if !grappler.is_returning {
-                let dir = (loot_transform.translation - grappler_transform.translation).normalize();
-                grappler_transform.translation += dir * time.delta_seconds() * 180.0;
-                // if loot is close it's grabbed, if too far the grappler returns empty
-                if grappler_transform.translation.distance(loot_transform.translation) < 20.0 {
-                    audio.play(asset_server.load("audio/grappler-pick-up.ogg"));
-                    grappler.grabbed_loot = true;
-                    grappler.is_returning = true;
-                } else if base_glob_transform.translation().distance(loot_transform.translation) > 80.0 {
-                    loot.is_targeted = false;
-                    grappler.is_returning = true;
-                }
-            // logic for grappler flying back
-            } else {
-                let dir = (base_glob_transform.translation() - grappler_transform.translation).normalize();
-                grappler_transform.translation += dir * time.delta_seconds() * 100.0;
-                // logic if flying back with loot
-                if grappler.grabbed_loot {
-                    loot_transform.translation = grappler_transform.translation;
-                    loot_transform.rotation = grappler_transform.rotation;
-                }
-                // resetting everything once grappler returns
-                if base_glob_transform.translation().distance(grappler_transform.translation) < 5.0 {
-                    if grappler.grabbed_loot {
-                        commands.entity(loot_entity).despawn();
+        if let Ok((mut loot_transform, loot_entity, mut loot)) = loot_query.get_mut(grappler.target.unwrap()) {
+            let mut wire_transform = wire_query.get_mut(*children.first().unwrap()).unwrap();
+            if let Ok((base_glob_transform, base_entity, mut base)) = base_query.get_mut(grappler.base.unwrap()) {
+                // defining rotation since grappler should always face away from base
+                let dir_away_from_base = (grappler_transform.translation - base_glob_transform.translation()).normalize();
+                grappler_transform.rotation = Quat::from_rotation_arc(Vec3::Y, dir_away_from_base);
+                // logic for grappler flying to the loot
+                if !grappler.is_returning {
+                    let dir = (loot_transform.translation - grappler_transform.translation).normalize();
+                    grappler_transform.translation += dir * time.delta_seconds() * 180.0;
+                    // if loot is close it's grabbed, if too far the grappler returns empty
+                    if grappler_transform.translation.distance(loot_transform.translation) < 20.0 {
+                        audio.play(asset_server.load("audio/grappler-pick-up.ogg"));
+                        grappler.grabbed_loot = true;
+                        grappler.is_returning = true;
+                    } else if base_glob_transform.translation().distance(loot_transform.translation) > 80.0 {
+                        loot.is_targeted = false;
+                        grappler.is_returning = true;
                     }
-                    player_loot.put_block_in_loot(&Blocks::get_random_block());
-                    base.deployed_grappler = false;
-                    commands.entity(base_entity).with_children(|parent| {
-                        base.spawn_child_grappler(parent, &asset_server);
-                    });
-                    commands.entity(grappler_entity).despawn_recursive();
+                // logic for grappler flying back
+                } else {
+                    let dir = (base_glob_transform.translation() - grappler_transform.translation).normalize();
+                    grappler_transform.translation += dir * time.delta_seconds() * 100.0;
+                    // logic if flying back with loot
+                    if grappler.grabbed_loot {
+                        loot_transform.translation = grappler_transform.translation;
+                        loot_transform.rotation = grappler_transform.rotation;
+                    }
+                    // resetting everything once grappler returns
+                    if base_glob_transform.translation().distance(grappler_transform.translation) < 5.0 {
+                        if grappler.grabbed_loot {
+                            commands.entity(loot_entity).despawn();
+                        }
+                        player_loot.put_block_in_loot(&Blocks::get_random_block());
+                        base.deployed_grappler = false;
+                        commands.entity(base_entity).with_children(|parent| {
+                            base.spawn_child_grappler(parent, &asset_server);
+                        });
+                        commands.entity(grappler_entity).despawn_recursive();
+                    }
                 }
+                // wire logic that is always relevant
+                let wire_length = (grappler_transform.translation - base_glob_transform.translation()).xy().length();
+                wire_transform.translation.y = -wire_length / 2.0;
+                wire_transform.scale.y = wire_length / 32.0;
+            } else {
+                // happens if the base harvester is despawned (e.g. player removed it in ship edit while loot was being collected)
+                loot.is_targeted = false;
+                commands.entity(grappler_entity).despawn_recursive();
             }
-            // wire logic that is always relevant
-            let wire_length = (grappler_transform.translation - base_glob_transform.translation()).xy().length();
-            wire_transform.translation.y = -wire_length / 2.0;
-            wire_transform.scale.y = wire_length / 32.0;
-        } else {
-            // happens if the base harvester is despawned (e.g. player removed it in ship edit while loot was being collected)
-            loot.is_targeted = false;
-            commands.entity(grappler_entity).despawn_recursive();
         }
     }
 }

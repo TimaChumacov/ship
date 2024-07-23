@@ -19,12 +19,12 @@ fn main() {
             ).set(LogPlugin {
                 filter: "off".into(),
                 level: bevy::log::Level::DEBUG,
-                update_subscriber: None
+                ..default()
             }), 
             AudioPlugin
     )) 
         .add_plugins(GeneralPlugin)
         .add_plugins(GamePlugin)
         .add_plugins(UiPlugin)
-        .run()
+        .run();
 }

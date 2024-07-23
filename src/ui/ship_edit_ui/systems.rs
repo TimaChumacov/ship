@@ -242,7 +242,7 @@ pub fn interact_with_ui_loot(
                 drag_and_drop.is_block_pressed = true;
             },
             Interaction::Hovered => {
-                *border_color = Color::RED.into();
+                *border_color = Color::srgb(1.0, 0.0, 0.0).into();
                 if loot_ui.is_dragged {
                     despawn_draggable(&mut commands, &old_draggable_query);
                     loot_ui.is_dragged = false;
@@ -374,10 +374,13 @@ pub fn update_draggable_color(
         if let Ok(children) = draggable_children.get_single() {
             for child in children {
                 if let Ok(mut ui_image) = ui_image_query.get_mut(*child) {
-                    if drag_and_drop.hovered_block.is_some() || drag_and_drop.hovered_into_loot {
-                        //ui_image.color = Color::GREEN;
+                    if drag_and_drop.hovered_block.is_some() {
+                        ui_image.color = Color::srgb(0.5, 1.0, 0.5);
                     } else {
-                        //ui_image.color = Color::RED;
+                        ui_image.color = Color::srgb(1.0, 0.5, 0.5);
+                    }
+                    if drag_and_drop.hovered_into_loot && drag_and_drop.block_origin == Some(BlockOrigin::Grid) {
+                        ui_image.color = Color::srgb(0.6, 0.6, 1.0);
                     }
                 }
             }
@@ -400,10 +403,10 @@ pub fn deselect_button(
         match *interaction {
             Interaction::Pressed => {
                 //player_loot.deselect_loot(&mut commands, &selected_loot_ui, &mut selected_loot_text, &mut selected_loot_title);
-                *border_color = Color::PURPLE.into();
+                *border_color = Color::srgb(1.0, 0.0, 1.0).into();
             },
             Interaction::Hovered => {
-                *border_color = Color::RED.into();
+                *border_color = Color::srgb(1.0, 0.0, 0.0).into();
             }, 
             Interaction::None => {
                 *border_color = Color::NONE.into();
@@ -429,7 +432,8 @@ pub fn rotate_loot(
     block_sprite_query: Query<Entity, With<UISprite>>,
     old_draggable_query: Query<Entity, With<Draggable>>
 ) {
-    if keyboard_input.just_pressed(KeyCode::KeyE) {
+    if keyboard_input.just_pressed(KeyCode::KeyQ) ||
+       keyboard_input.just_pressed(KeyCode::KeyE) {
         if let Some(block_index) = block_display.block_index {
             let block_to_rotate: &mut Blocks;
             match block_index {
@@ -440,7 +444,12 @@ pub fn rotate_loot(
                     block_to_rotate = &mut player_loot.looted_blocks[index];
                 }
             }
-            block_to_rotate.rotate_90_right();
+            if keyboard_input.just_pressed(KeyCode::KeyQ) {
+                block_to_rotate.rotate_90(RotDirection::Left);
+            }
+            if keyboard_input.just_pressed(KeyCode::KeyE) {
+                block_to_rotate.rotate_90(RotDirection::Right);
+            }
             if drag_and_drop.is_block_dragged {
                 spawn_draggable(&block_to_rotate, &mut commands, &asset_server, &loot_menu_query, &old_draggable_query);
             }

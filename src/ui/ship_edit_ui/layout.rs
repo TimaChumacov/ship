@@ -33,6 +33,7 @@ pub fn show_or_hide_ui(
                 if ship_layout.is_core_placed() {
                     next_state.set(PauseState::Running);
                     block_display.block_to_display = None;
+                    block_display.block_index = None;
                     let ui_entity = ui_query.single();
                     commands.entity(ui_entity).despawn_recursive();
                     if !ship_layout.old_blocks_empty() {
@@ -61,7 +62,7 @@ fn spawn_ui(
         parent.spawn(
             NodeBundle {
                 style: info_menu(),
-                background_color: Color::WHITE.into(),
+                background_color: Color::srgb(1.0, 1.0, 1.0).into(),
                 ..default()
             }
         ).with_children(|parent| {
@@ -127,7 +128,7 @@ fn spawn_ui(
                 SelectedLootDescription {}
             ));
         });
-        // --- grid edit menu ---
+        // --- Grid edit menu ---
         parent.spawn((
             NodeBundle {
                 style: grid_menu(),
@@ -142,8 +143,8 @@ fn spawn_ui(
                     parent.spawn((
                         ButtonBundle {
                             style: block(),
-                            border_color: BLOCK_COLOR.into(),
-                            //background_color: BLOCK_COLOR.into(),
+                            //border_color: BLOCK_COLOR.into(),
+                            background_color: Color::srgb(1.0, 1.0, 1.0).into(),
                             ..default()
                         },
                         UiBlock {
@@ -199,7 +200,7 @@ fn spawn_ui(
                     ..default()
                 }
             ).with_children(|parent| {
-                parent.spawn(TextBundle::from_section("Loot 32/32", title()));
+                parent.spawn(TextBundle::from_section("Storage", title()));
             });
             // --- Wrapp for loot grid ---
             parent.spawn((

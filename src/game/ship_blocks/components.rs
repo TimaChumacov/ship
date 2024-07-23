@@ -65,11 +65,11 @@ impl Rotate for Blocks {
         }
     }
 
-    fn rotate_90_right(&mut self) {
+    fn rotate_90(&mut self, direction: RotDirection) {
         match self {
             Self::Core(_core) => {},
-            Self::Turret(turret) => turret.rotate_90_right(),
-            Self::Harvester(harvester) => harvester.rotate_90_right(),
+            Self::Turret(turret) => turret.rotate_90(direction),
+            Self::Harvester(harvester) => harvester.rotate_90(direction),
         }
     }
 }

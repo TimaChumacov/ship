@@ -1,13 +1,14 @@
 use bevy::prelude::*;
 
-pub const BLOCK_COLOR: Color = Color::rgba(0.0, 0.0, 0.0, 0.3);
-pub const MAIN_COLOR: Color = Color::rgb(0.39, 0.36, 0.36);
+pub const BLOCK_COLOR: Color = Color::srgba(0.0, 0.0, 0.0, 0.3);
+pub const MAIN_COLOR: Color = Color::srgb(0.39, 0.36, 0.36);
 
 pub fn absolute() -> Style {
     Style {
     position_type: PositionType::Absolute,
     width: Val::Percent(100.0),
     height: Val::Percent(100.0),
+    top: Val::VMin(0.0),
     ..Style::DEFAULT
     }
 }
@@ -76,6 +77,7 @@ pub fn info_menu() -> Style {
     style.flex_direction = FlexDirection::Column;
     style.align_items = AlignItems::Center;
     style.align_content = AlignContent::Center;
+    style.padding = UiRect::all(Val::VMin(2.0));
 
     style
 }
@@ -148,7 +150,7 @@ pub fn text() -> TextStyle{
 pub fn stats_text() -> TextStyle{
     TextStyle {
         font_size: 25.0,
-        color: Color::RED,
+        color: Color::srgb(1.0, 0.0, 0.0),
         ..default()
     }
 }

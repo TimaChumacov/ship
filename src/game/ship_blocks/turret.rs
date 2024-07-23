@@ -73,14 +73,21 @@ impl Rotate for Turret {
         self.rotation
     }
 
-    fn rotate_90_right(&mut self) {
-        self.rotation += 90.0
+    fn rotate_90(&mut self, direction: RotDirection) {
+        match direction {
+            RotDirection::Left => {
+                self.rotation -= 90.0
+            },
+            RotDirection::Right => {
+                self.rotation += 90.0
+            }
+        }
     }
 }
 
 impl Description for Turret {
     fn get_info(&self) -> String {
-        format!("Turrets shoot in the direction they're facing. You can rotate them with [R]. Each bullet deals 1 dmg, while enemies have 3 hp. Turrets have 3 max hp")
+        format!("Turrets shoot in the direction they're facing. You can rotate them with [Q][E]. Each bullet deals 1 dmg, while enemies have 3 hp. Turrets have 3 max hp")
     }
 
     fn get_title(&self) -> String {

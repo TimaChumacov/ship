@@ -135,14 +135,21 @@ impl Rotate for Harvester {
         self.rotation
     }
 
-    fn rotate_90_right(&mut self) {
-        self.rotation += 90.0
+    fn rotate_90(&mut self, direction: RotDirection) {
+        match direction {
+            RotDirection::Left => {
+                self.rotation -= 90.0
+            },
+            RotDirection::Right => {
+                self.rotation += 90.0
+            }
+        }
     }
 }
 
 impl Description for Harvester {
     fn get_info(&self) -> String {
-        format!("Harvesters collect loot around them. The reach is 2 blocks in each direction. You can rotate them with [R], but it doesn't affect anything yet. Harvesters have 3 max hp.")
+        format!("Harvesters collect loot around them. The reach is 2 blocks in each direction. You can rotate them with [Q][E], but it doesn't affect anything yet. Harvesters have 3 max hp.")
     }
 
     fn get_title(&self) -> String {
